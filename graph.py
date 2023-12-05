@@ -10,7 +10,7 @@ class Graph:
 
     def __init__(self):
         self.__image = mpimg.imread("data\poland.png")
-        self.__G = nx.Graph()
+        self.G = nx.Graph()
         self.__data = pd.read_csv('data\data.csv')
         self.add_nodes()
         self.add_edges()
