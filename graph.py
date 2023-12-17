@@ -8,12 +8,14 @@ import math
 
 class Graph:
 
+
     def __init__(self):
         self.__image = mpimg.imread("data\poland.png")
-        self.G = nx.Graph()
+        self.G = nx.DiGraph()
         self.__data = pd.read_csv('data\data.csv')
         self.add_nodes()
         self.add_edges()
+
 
     def add_nodes(self):
         for i in range(16):
@@ -21,6 +23,7 @@ class Graph:
                               coordinates = (self.__data['Coordinate_X'][i], 
                                              self.__data['Coordinate_Y'][i]),
                               label = self.__data['City'][i])
+
 
     def add_edges(self):
         for i in range(16):
@@ -44,4 +47,3 @@ class Graph:
         nx.draw_networkx_edge_labels(self.G, pos = pos, edge_labels = edge_labels, font_color = 'red', font_size = 7)
         plt.axis('off')
         plt.show()
-        return ""
