@@ -24,7 +24,7 @@ class Model:
         self.DL = [0 for _ in range(self.n)]
         self.DW = [[0 for _ in range(len(SW))] for _ in range(self.n)]
         self.DT = [0 for _ in range(self.n)]
-        self.DP = []
+        self.DP = [{} for _ in range(self.n)]
 
 
     def goal_function(self):
@@ -50,7 +50,7 @@ class Model:
         for j in range(len(self.SW)):
             HV += self.SW[j][0] * self.DW[i][j]
 
-        self.HF[i] = (self.SL[self.DL[i]][0] + HV) * self.HL[i]
+        self.HF[i] = (self.SL[self.DL[i]][0] + HV) * self.HL[i] / 100
 
         return self.HF
 

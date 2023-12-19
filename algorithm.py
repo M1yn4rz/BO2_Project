@@ -5,6 +5,7 @@ import random
 import networkx as nx
 import os
 import matplotlib.pyplot as plt
+import copy
 
 
 
@@ -32,7 +33,7 @@ class Algorithm:
 
     def AG(self):
 
-        first_population, list_id = self.generate_firts_population(size_population = 10000)
+        first_population, list_id = self.generate_firt_population(size_population = 1000)
 
         i = 0
         print('\nMin:\n')
@@ -45,6 +46,12 @@ class Algorithm:
         for elem in first_population[list_id[1]].DT:
             print('\n', i, ':', elem)
             i += 1
+
+        print()
+
+        print(first_population[list_id[0]].DW)
+        print()
+        print(first_population[list_id[1]].DW)
         
 
     def generate_track(self, points, start):
@@ -93,7 +100,7 @@ class Algorithm:
         return result_path
 
 
-    def generate_firts_population(self, size_population):
+    def generate_firt_population(self, size_population):
 
         first_population = []
         goal_functions = []
@@ -112,14 +119,67 @@ class Algorithm:
             points = []
             
             for i in range(self.__data_n):
-                for value in self.SP[i][i + 1]:
-                    points.append([i + 1, value[0]])
+                for value in self.SP[i + 1]:
+                    points.append([i + 1, value[0], value[1]])
 
             for elem in points:
-                HP[random.randint(0, 5)].append(elem)
+                random_id = random.randint(0, 5)
+                HP[random_id].append(elem[:-1])
+                if elem[0] not in one_result.DP[random_id].keys():
+                    one_result.DP[random_id][elem[0]] = []
+                one_result.DP[random_id][elem[0]].append([elem[1], elem[2]])
             
             for i in range(len(HP)):
                 one_result.DT[i] = self.generate_track(HP[i], 4)
+
+            SL_copy = copy.deepcopy(self.SL)
+            itr = 0
+
+            for i in range(self.n):
+                lok = random.randint(0, len(SL_copy) - 1)
+                while SL_copy[lok][1] == 0:
+                    lok = random.randint(0, len(SL_copy) - 1)
+                    itr += 1
+                    if itr > 1000:
+                        print("ERROR - infinity loop in DL")
+                SL_copy[lok][1] -= 1
+                one_result.DL[i] = lok
+
+            for i in range(self.n):
+                max_packages = 0
+                actually_packages = 0
+                DT_copy = copy.deepcopy(one_result.DT[i])
+                DP_copy = copy.deepcopy(one_result.DP[i])
+                SW_copy = copy.deepcopy(self.SW)
+                DP_actually = {}
+                for elem in DT_copy:
+                    if elem[0] in DP_copy.keys():
+                        for e in DP_copy[elem[0]]:
+                            if e[0] not in DP_actually:
+                                DP_actually[e[0]] = e[1]
+                            else:
+                                DP_actually[e[0]] += e[1]
+                            actually_packages += e[1]
+                        del DP_copy[elem[0]]
+                    if actually_packages > max_packages:
+                        max_packages = actually_packages
+                    if elem[1] in DP_actually.keys():
+                        actually_packages -= DP_actually[elem[1]]
+                        del DP_actually[elem[1]]
+                    itr1 = 0
+                    while self.sum_w_capacity(one_result.DW[i]) < max_packages:
+                        random_id = random.randint(0, len(self.SW) - 1)
+                        itr1 += 1
+                        if itr1 > 1000:
+                            print("ERROR - infinity loop in DW")
+                        itr2 = 0
+                        while SW_copy[random_id][1] == 0:
+                            random_id = random.randint(0, len(self.SW) - 1)
+                            itr2 += 1
+                            if itr2 > 1000:
+                                print("ERROR - infinity loop in DW")
+                        one_result.DW[i][random_id] += 1
+                        SW_copy[random_id][1] -= 1
 
             goal_functions.append(one_result.goal_function())
                 
@@ -156,6 +216,13 @@ class Algorithm:
         return first_population, list_id
 
 
+    def sum_w_capacity(self, DW):
+        capacity = 0
+        for i in range(len(self.SW)):
+            capacity += self.SW[i][2] * DW[i]
+        return capacity
+
+
     def solve_SC(self):
 
         self.SC = [[0, 0] for _ in range(self.__data_n)]
@@ -167,17 +234,15 @@ class Algorithm:
 
     def solve_SP(self):
 
-        self.SP = []
+        self.SP = {}
 
         for i in range(self.__data_n):
 
             lst = self.__data['Packages_to_sent'][i].split(';')
-            dc = dict()
-            dc[i + 1] = []
+            
+            self.SP[i + 1] = []
 
             for elem in lst:
                 
                 key, value = elem.split(':')
-                dc[i + 1].append([int(key), int(value)])
-
-            self.SP.append(dc)
+                self.SP[i + 1].append([int(key), int(value)])
