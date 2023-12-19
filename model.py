@@ -20,6 +20,7 @@ class Model:
 
         self.HF = []
         self.HL = []
+        self.HP = []
 
         self.DL = [0 for _ in range(self.n)]
         self.DW = [[0 for _ in range(len(SW))] for _ in range(self.n)]

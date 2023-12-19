@@ -6,6 +6,8 @@ import networkx as nx
 import os
 import matplotlib.pyplot as plt
 import copy
+import sys
+sys.setrecursionlimit(10000)
 
 
 
@@ -33,26 +35,113 @@ class Algorithm:
 
     def AG(self):
 
-        first_population, list_id = self.generate_firt_population(size_population = 1000)
+        size_population = 1000
+        epochs = 50
 
-        i = 0
-        print('\nMin:\n')
-        for elem in first_population[list_id[0]].DT:
-            print('\n', i, ':', elem)
-            i += 1
+        first_population = self.generate_firt_population(size_population)
 
-        i = 0
-        print('\nMax:\n')
-        for elem in first_population[list_id[1]].DT:
-            print('\n', i, ':', elem)
-            i += 1
+        actually_population = first_population
 
-        print()
+        list_min_f = []
+        list_max_f = []
+        list_mean_f = []
+        X = [i + 1 for i in range(epochs)]
 
-        print(first_population[list_id[0]].DW)
-        print()
-        print(first_population[list_id[1]].DW)
+        percent = 0
+
+        for per in range(epochs):
+
+            if int(per/epochs*100) != percent:
+                os.system('cls' if os.name == 'nt' else 'clear')
+                percent = int((per + 1)/epochs*100)
+                print('\nGenerate new epochs process:', percent, '%')
+
+            actually_population = self.sort(actually_population)
+
+            actually_population = actually_population[:len(actually_population)//5]
+            population_to_mutate = copy.deepcopy(actually_population)
+
+            while len(actually_population) < size_population:
+
+                actually_population.append(self.mutate_population(population_to_mutate))
+
+            for result in actually_population:
+                result.goal_function()
+
+            goal_functions = [x.f for x in actually_population]
+
+            list_min_f.append(min(goal_functions))
+            list_max_f.append(max(goal_functions))
+            list_mean_f.append(sum(goal_functions)/len(goal_functions))
+
+        plt.plot(X, list_min_f, label = 'Najmniejsza funkcja celu danej populacji')
+        plt.plot(X, list_max_f, label = 'Największa funkcja celu danej populacji')
+        plt.plot(X, list_mean_f, label = 'Średnia funkcja celu danej populacji')
+        plt.title('Wykres funkcji celu kolejnych populacji')
+        plt.xlabel('Numer populacji')
+        plt.ylabel('Wartość funkcji celu')
+        plt.legend()
+        plt.grid()
+        plt.show()
         
+    
+    def mutate_population(self, population):
+
+        result_id = random.randint(0, len(population) - 1)
+
+        return self.mutate_points(population[result_id])
+
+    def mutate_points(self, result):
+        
+        new_result = copy.deepcopy(result)
+
+        for _ in range(5):
+            train1 = random.randint(0, self.n - 1)
+            itr = 0
+            while len(new_result.HP[train1]) == 0:
+                train1 = random.randint(0, self.n - 1)
+                itr += 1
+                if itr > 1000:
+                    print("ERROR - infinity loop in mutate points")
+            train2 = random.randint(0, self.n - 1)
+            itr = 0
+            while train1 == train2:
+                train2 = random.randint(0, self.n - 1)
+                itr += 1
+                if itr > 1000:
+                    print("ERROR - infinity loop in mutate points")
+            point_id = random.randint(0, len(new_result.HP[train1]) - 1)
+            new_result.HP[train2].append(new_result.HP[train1][point_id])
+            del new_result.HP[train1][point_id]
+        
+        for _ in range(2):
+            train = random.randint(0, self.n - 1)
+            random.shuffle(new_result.HP[train])
+
+        for i in range(self.n):
+            new_result.DT[i] = self.generate_track(new_result.HP[i], 4)
+
+        return new_result
+
+    def mutate_lok(self, result):
+        pass
+
+
+    def mutate_wag(self, result):
+        pass
+
+
+    def sort(self, population):
+        def quicksort(population):
+            if len(population) <= 1:
+                return population
+            else:
+                pivot = population[0]
+                less = [x for x in population[1:] if x.f <= pivot.f]
+                greater = [x for x in population[1:] if x.f > pivot.f]
+                return quicksort(less) + [pivot] + quicksort(greater)
+        return quicksort(population)
+
 
     def generate_track(self, points, start):
 
@@ -110,8 +199,8 @@ class Algorithm:
 
             if int(per/size_population*100) != percent:
                 os.system('cls' if os.name == 'nt' else 'clear')
-                percent = int(per/size_population*100)
-                print('\nGenerate first population process:', percent + 1, '%')
+                percent = int((per + 1)/size_population*100)
+                print('\nGenerate first population process:', percent, '%')
                 
             one_result = md.Model(self.SC, self.SL, self.SW, self.n, self.SG)
 
@@ -128,6 +217,8 @@ class Algorithm:
                 if elem[0] not in one_result.DP[random_id].keys():
                     one_result.DP[random_id][elem[0]] = []
                 one_result.DP[random_id][elem[0]].append([elem[1], elem[2]])
+
+            one_result.HP = HP
             
             for i in range(len(HP)):
                 one_result.DT[i] = self.generate_track(HP[i], 4)
@@ -209,11 +300,7 @@ class Algorithm:
         plt.grid()
         plt.show()
 
-        list_id = [0, 0]
-        list_id[0] = goal_functions.index(min(goal_functions))
-        list_id[1] = goal_functions.index(max(goal_functions))
-
-        return first_population, list_id
+        return first_population
 
 
     def sum_w_capacity(self, DW):
