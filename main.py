@@ -16,9 +16,9 @@ def main():
     new_ag = ag.Algorithm(SL, SW, n = 6)
     
     best_result = new_ag.AG(size_population = 1000, 
-                            epochs = 20, 
+                            epochs = 100, 
                             previous_population = 1,
-                            mutate_power = 5)
+                            mutate_power = 10)
 
     g = gp.Graph()
 

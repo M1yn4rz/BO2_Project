@@ -1,13 +1,17 @@
 import networkx as nx
+import copy
+import random
 
 
 
 class Functions:
 
 
-    def __init__(self):
+    def __init__(self, n, SW):
 
-        pass
+        self.n = n
+
+        self.SW = SW
 
 
     def generate_track(self, points, start, SG):
@@ -70,3 +74,68 @@ class Functions:
                 return quicksort(less) + [pivot] + quicksort(greater)
             
         return quicksort(population)
+    
+
+    def attaching_wagons(self, result):
+
+        for i in range(self.n):
+
+            max_packages = 0
+            actually_packages = 0
+            DT_copy = copy.deepcopy(result.DT[i])
+            DP_copy = copy.deepcopy(result.DP[i])
+            SW_copy = copy.deepcopy(self.SW)
+            DP_actually = {}
+            result.DW[i] = [0 for _ in range(len(self.SW))]
+
+            for elem in DT_copy:
+
+                if elem[0] in DP_copy.keys():
+
+                    for e in DP_copy[elem[0]]:
+
+                        if e[0] not in DP_actually:
+                            DP_actually[e[0]] = e[1]
+                        else:
+                            DP_actually[e[0]] += e[1]
+                        actually_packages += e[1]
+
+                    del DP_copy[elem[0]]
+
+                if actually_packages > max_packages:
+                    max_packages = actually_packages
+
+                if elem[1] in DP_actually.keys():
+                    actually_packages -= DP_actually[elem[1]]
+                    del DP_actually[elem[1]]
+
+            itr1 = 0
+
+            while self.sum_wagon_capacity(result.DW[i]) < max_packages:
+
+                random_id = random.randint(0, len(self.SW) - 1)
+                itr1 += 1
+
+                if itr1 > 1000:
+                    print("ERROR - infinity loop in DW")
+
+                itr2 = 0
+
+                while SW_copy[random_id][1] == 0:
+                    random_id = random.randint(0, len(self.SW) - 1)
+                    itr2 += 1
+                    if itr2 > 1000:
+                        print("ERROR - infinity loop in DW")
+
+                result.DW[i][random_id] += 1
+                SW_copy[random_id][1] -= 1
+
+    
+    def sum_wagon_capacity(self, DW):
+
+        capacity = 0
+
+        for i in range(len(self.SW)):
+            capacity += self.SW[i][2] * DW[i]
+            
+        return capacity

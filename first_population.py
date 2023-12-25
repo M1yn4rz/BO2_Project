@@ -12,7 +12,7 @@ class First_population:
 
     def __init__(self, n, SL, SW, SP, SC, SG):
 
-        self.fn = fn.Functions()
+        self.fn = fn.Functions(n, SW)
 
         self.SL = SL
         self.SW = SW
@@ -31,10 +31,10 @@ class First_population:
 
         for per in range(size_population):
 
-            if int(per/size_population*100) != percent:
+            if int(per/size_population*100) >= percent:
                 os.system('cls' if os.name == 'nt' else 'clear')
-                percent = int(per/size_population*100)
-                print('\nGenerate first population process:', percent + 1, '%')
+                percent = int((per+1)/size_population*100)
+                print('\nGenerate first population process:', percent, '%')
                 
             one_result = md.Model(self.SC, self.SL, self.SW, self.n, self.SG)
 
@@ -49,7 +49,6 @@ class First_population:
 
             for elem in points:
 
-                # random_id = random.randint(0, 5)
                 HP[idx].append(elem[:-1])
 
                 if elem[0] not in one_result.DP[idx].keys():
@@ -83,59 +82,13 @@ class First_population:
                 SL_copy[lok][1] -= 1
                 one_result.DL[i] = lok
 
+            self.fn.attaching_wagons(one_result)
+
             for i in range(self.n):
-
-                max_packages = 0
-                actually_packages = 0
-                DT_copy = copy.deepcopy(one_result.DT[i])
-                DP_copy = copy.deepcopy(one_result.DP[i])
-                SW_copy = copy.deepcopy(self.SW)
-                DP_actually = {}
-
-                for elem in DT_copy:
-
-                    if elem[0] in DP_copy.keys():
-
-                        for e in DP_copy[elem[0]]:
-
-                            if e[0] not in DP_actually:
-                                DP_actually[e[0]] = e[1]
-                            else:
-                                DP_actually[e[0]] += e[1]
-                            actually_packages += e[1]
-
-                        del DP_copy[elem[0]]
-
-                    if actually_packages > max_packages:
-                        max_packages = actually_packages
-
-                    if elem[1] in DP_actually.keys():
-                        actually_packages -= DP_actually[elem[1]]
-                        del DP_actually[elem[1]]
-
-                    itr1 = 0
-
-                    while self.sum_w_capacity(one_result.DW[i]) < max_packages:
-
-                        random_id = random.randint(0, len(self.SW) - 1)
-                        itr1 += 1
-
-                        if itr1 > 1000:
-                            print("ERROR - infinity loop in DW")
-
-                        itr2 = 0
-
-                        while SW_copy[random_id][1] == 0:
-                            random_id = random.randint(0, len(self.SW) - 1)
-                            itr2 += 1
-                            if itr2 > 1000:
-                                print("ERROR - infinity loop in DW")
-
-                        one_result.DW[i][random_id] += 1
-                        SW_copy[random_id][1] -= 1
+                one_result.solve_HL(i)
+                one_result.solve_HF(i)
 
             goal_functions.append(one_result.goal_function())
-                
             population.append(one_result)
 
         min__ = min(goal_functions)
@@ -163,13 +116,3 @@ class First_population:
         plt.show()
 
         return population
-
-
-    def sum_w_capacity(self, DW):
-
-        capacity = 0
-
-        for i in range(len(self.SW)):
-            capacity += self.SW[i][2] * DW[i]
-            
-        return capacity

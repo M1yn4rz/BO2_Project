@@ -30,12 +30,6 @@ class Model:
 
     def goal_function(self):
 
-        for i in range(self.n):
-            self.solve_HL(i)
-        
-        for i in range(self.n):
-            self.solve_HF(i)
-
         self.f = sum(self.HF)
 
         return self.f
