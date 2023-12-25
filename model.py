@@ -18,8 +18,8 @@ class Model:
         self.SL = SL
         self.SW = SW
 
-        self.HF = []
-        self.HL = []
+        self.HF = [0 for _ in range(self.n)]
+        self.HL = [0 for _ in range(self.n)]
         self.HP = []
 
         self.DL = [0 for _ in range(self.n)]
@@ -29,9 +29,6 @@ class Model:
 
 
     def goal_function(self):
-
-        self.HL = [0 for _ in range(self.n)]
-        self.HF = [0 for _ in range(self.n)]
 
         for i in range(self.n):
             self.solve_HL(i)
@@ -46,6 +43,8 @@ class Model:
 
     def solve_HF(self, i):
 
+        self.HF[i] = 0
+
         HV = 0
 
         for j in range(len(self.SW)):
@@ -58,6 +57,8 @@ class Model:
 
     def solve_HL(self, i):
 
+        self.HL[i] = 0
+
         if not self.DT[i]:
             self.HL[i] = 0
             return 0
@@ -68,6 +69,7 @@ class Model:
             path.append(elem[1])
 
         for j in range(len(path) - 1):
+            
             current_node = path[j]
             next_node = path[j + 1]
 
