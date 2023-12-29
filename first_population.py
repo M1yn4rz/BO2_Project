@@ -88,31 +88,31 @@ class First_population:
                 one_result.solve_HL(i)
                 one_result.solve_HF(i)
 
-            goal_functions.append(one_result.goal_function())
+            # goal_functions.append(one_result.goal_function())
             population.append(one_result)
 
-        min__ = min(goal_functions)
-        max__ = max(goal_functions)
-        mean__ = sum(goal_functions)/len(goal_functions)
+        # min__ = min(goal_functions)
+        # max__ = max(goal_functions)
+        # mean__ = sum(goal_functions)/len(goal_functions)
         
-        print('\nMin GF:', min__)
-        print('Max GF:', max__)
-        print('Mean GF:', mean__)
+        # print('\nMin GF:', min__)
+        # print('Max GF:', max__)
+        # print('Mean GF:', mean__)
 
-        X = [i + 1 for i in range(size_population)]
-        min_ = [min__ for _ in range(size_population)]
-        max_ = [max__ for _ in range(size_population)]
-        mean_ = [mean__ for i in range(size_population)]
+        # X = [i + 1 for i in range(size_population)]
+        # min_ = [min__ for _ in range(size_population)]
+        # max_ = [max__ for _ in range(size_population)]
+        # mean_ = [mean__ for i in range(size_population)]
 
-        plt.plot(X, goal_functions, label = 'Aktualna funkcja celu')
-        plt.plot(X, min_, label = 'Najmniejsza funkcja celu')
-        plt.plot(X, max_, label = 'Największa funkcja celu')
-        plt.plot(X, mean_, label = 'Średnia funkcja celu')
-        plt.title('Pierwsza wygenerowana populacja')
-        plt.xlabel('Numer populacji')
-        plt.ylabel('Wartość funkcji celu')
-        plt.legend()
-        plt.grid()
-        plt.show()
+        # plt.plot(X, goal_functions, label = 'Aktualna funkcja celu')
+        # plt.plot(X, min_, label = 'Najmniejsza funkcja celu')
+        # plt.plot(X, max_, label = 'Największa funkcja celu')
+        # plt.plot(X, mean_, label = 'Średnia funkcja celu')
+        # plt.title('Pierwsza wygenerowana populacja')
+        # plt.xlabel('Numer populacji')
+        # plt.ylabel('Wartość funkcji celu')
+        # plt.legend()
+        # plt.grid()
+        # plt.show()
 
         return population

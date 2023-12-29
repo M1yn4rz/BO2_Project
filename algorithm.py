@@ -10,8 +10,9 @@ import copy
 import sys
 import first_population as fp
 import functions as fn
-import concurrent.futures
 import os
+import threading
+import queue
 
 
 
@@ -87,15 +88,15 @@ class Algorithm:
             list_max_f.append(max(goal_functions))
             list_mean_f.append(sum(goal_functions)/len(goal_functions))
 
-        plt.plot(X, list_min_f, label = 'Najmniejsza funkcja celu danej populacji')
-        plt.plot(X, list_max_f, label = 'Największa funkcja celu danej populacji')
-        plt.plot(X, list_mean_f, label = 'Średnia funkcja celu danej populacji')
-        plt.title('Wykres funkcji celu kolejnych populacji')
-        plt.xlabel('Numer populacji')
-        plt.ylabel('Wartość funkcji celu')
-        plt.legend()
-        plt.grid()
-        plt.show()
+        # plt.plot(X, list_min_f, label = 'Najmniejsza funkcja celu danej populacji')
+        # plt.plot(X, list_max_f, label = 'Największa funkcja celu danej populacji')
+        # plt.plot(X, list_mean_f, label = 'Średnia funkcja celu danej populacji')
+        # plt.title('Wykres funkcji celu kolejnych populacji')
+        # plt.xlabel('Numer populacji')
+        # plt.ylabel('Wartość funkcji celu')
+        # plt.legend()
+        # plt.grid()
+        # plt.show()
 
         best_id = goal_functions.index(min(goal_functions))
         best_result = actually_population[best_id]
@@ -105,6 +106,62 @@ class Algorithm:
 
         return best_result
     
+
+    def start_AG(self, size_population = 1000, previous_population = 5, mutate_power = 5):
+
+        population = self.fp.generate_first_population(size_population)
+        previous_population = int(previous_population / 100 * size_population)
+        mutate_power = int(mutate_power / 100 * self.n * 10)
+
+        return population, previous_population, mutate_power
+    
+
+    def loop_AG(self, actually_population, size_population, previous_population, mutate_power):
+
+        actually_population = self.fn.sort(actually_population)
+        actually_population = actually_population[:previous_population]
+        population_to_mutate = copy.deepcopy(actually_population)
+
+        args = (population_to_mutate, mutate_power)
+        results_queue = queue.Queue()
+
+        loop = (size_population - len(actually_population))//7
+        loops = [loop for _ in range(7)]
+
+        for i in range((size_population - len(actually_population)) - sum(loops)):
+            loops[i] += 1
+
+        threads = []
+
+        for i in range(7):
+            threads.append(threading.Thread(target=self.generate_population_in_thread, args=(args, loops[i], results_queue)))
+
+        for i in range(7):
+            threads[i].start()
+
+        for i in range(7):
+            threads[i].join()
+
+        for _ in range(7):
+            actually_population.extend(results_queue.get())
+
+        for result in actually_population:
+
+            for i in range(self.n):
+                result.solve_HL(i)
+                result.solve_HF(i)
+
+            result.goal_function()
+
+        return actually_population
+    
+
+    def generate_population_in_thread(self, args, loops, queue):
+        lst = []
+        for _ in range(loops):
+            lst.append(self.mutate_population(args))
+        queue.put(lst)
+
 
     def mutate_population(self, args):
 

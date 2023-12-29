@@ -73,3 +73,22 @@ class Model:
                 raise ValueError(f"Edge {current_node} -> {next_node} not found in the graph.")
             
         return self.HL[i]
+    
+
+    def __str__(self):
+        str_ = ""
+        str_ += "\nThe best result:"
+        str_ += "\n\n\tNumber of trains: " + str(self.n)
+        str_ += "\n\n\tGoal function value: " + str(round(self.f, 3))
+        str_ += "\n\n\tStatistics in individual trains:\n"
+        for i in range(self.n):
+            str_ += "\n\t\tTrain " + str(i + 1)
+            str_ += "\t- " + "distance : " + str(self.HL[i]) + " km"
+            str_ += "\t- " + "fuel : " + str(self.HF[i]) + " L"
+            str_ += "\t- " + "locomotive : " + str(self.DL[i])
+            str_ += "\t- " + "wagons : " + str(self.DW[i])
+        str_ += "\n\n\tTracks in individual trains:"
+        for i in range(self.n):
+            str_ += "\n\n\t\tTrain " + str(i + 1) + " :\n"
+            str_ += "\n" + str(self.DT[i])
+        return str_
