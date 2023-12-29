@@ -41,9 +41,9 @@ class First_population:
             HP = [[] for _ in range(self.n)]
             points = []
             
-            for i in range(len(self.SC)):
-                for value in self.SP[i + 1]:
-                    points.append([i + 1, value[0], value[1]])
+            for key in self.SP:
+                for elem in self.SP[key]:
+                    points.append([key, elem[0], elem[1]])
 
             idx = 0
 

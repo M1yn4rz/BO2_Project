@@ -1,19 +1,18 @@
 import wx
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
-from matplotlib.animation import FuncAnimation
-from matplotlib.figure import Figure
 import networkx as nx
 import random
 import graph as gp
 import matplotlib.image as mpimg
 import algorithm as ag
-import numpy as np
 import time
 import threading
 from pubsub import pub
 import sys
 import time
+import pandas as pd
+import wx.grid as gridlib
 
 
 
@@ -29,15 +28,17 @@ class MyFrame(wx.Frame):
         super(MyFrame, self).__init__(*args, **kw)
         self.panel = wx.Panel(self)
 
+        self.df = pd.read_csv("data/packages.csv")
         self.list_min_f = []
         self.list_max_f = []
         self.list_mean_f = []
         self.X = []
         self.best_result = ""
+        self.no_text = ""
         self.time_to_the_end = ""
 
         self.window = 'Map'
-        self.print_graph()
+        # self.print_graph()
         self.buttons()
         self.variables()
         
@@ -57,6 +58,7 @@ class MyFrame(wx.Frame):
         self.graph_button()
         self.chart_button()
         self.result_button()
+        self.packages_button()
 
 
 # ________________ VARIABLES ________________ #
@@ -101,6 +103,11 @@ class MyFrame(wx.Frame):
         self.label_time_to_end = wx.StaticText(self.panel, label = "Ready to start")
         self.label_time_to_end.SetPosition((1100, 633))
         self.label_time_to_end.SetForegroundColour(wx.Colour(255, 255, 255))
+
+        self.label_result = wx.StaticText(self.panel, label=self.no_text, style=wx.ALIGN_LEFT)
+        self.label_result.Wrap(827)
+        self.label_result.SetPosition((218, 0))
+        self.label_result.SetForegroundColour(wx.Colour(255, 255, 255))
 
 
 # ________________ START BUTTON ________________ #
@@ -289,10 +296,7 @@ class MyFrame(wx.Frame):
     def click_result_button(self, event):
         self.destroy_window()
         self.window = 'Result'
-        self.label_result = wx.StaticText(self.panel, label=self.best_result, style=wx.ALIGN_LEFT)
-        self.label_result.Wrap(827)
-        self.label_result.SetPosition((218, 0))
-        self.label_result.SetForegroundColour(wx.Colour(255, 255, 255))
+        self.label_result.SetLabel(self.best_result)
 
     def result_button(self):
 
@@ -302,6 +306,31 @@ class MyFrame(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.click_result_button, self.result_button)
         self.result_button.SetBackgroundColour(wx.Colour(0, 128, 255))
         self.result_button.SetPosition((54, 150))
+
+
+# ________________ PACKAGES BUTTON ________________ #
+
+    def on_packages_enter(self, event):
+        self.packages_button.SetBackgroundColour(wx.Colour(255, 165, 0))
+        self.packages_button.Refresh()
+
+    def on_packages_leave(self, event):
+        self.packages_button.SetBackgroundColour(wx.Colour(0, 128, 255))
+        self.packages_button.Refresh()
+
+    def click_packages_button(self, event):
+        self.destroy_window()
+        self.window = 'Packages'
+        self.print_packages()
+
+    def packages_button(self):
+
+        self.packages_button = wx.Button(self.panel, label = "Packages", size = (110, 30))
+        self.packages_button.Bind(wx.EVT_ENTER_WINDOW, self.on_packages_enter)
+        self.packages_button.Bind(wx.EVT_LEAVE_WINDOW, self.on_packages_leave)
+        self.Bind(wx.EVT_BUTTON, self.click_packages_button, self.packages_button)
+        self.packages_button.SetBackgroundColour(wx.Colour(0, 128, 255))
+        self.packages_button.SetPosition((1100, 150))
 
 
 # ________________ GRAPH ________________ #
@@ -365,11 +394,50 @@ class MyFrame(wx.Frame):
             self.canvas.draw()
 
 
+# ________________ Packages ________________ #
+            
+    def print_packages(self):
+
+        self.grid = gridlib.Grid(self.panel)
+        self.grid.CreateGrid(self.df.shape[0], self.df.shape[1])
+        for col in range(self.df.shape[1]):
+            self.grid.SetColLabelValue(col, self.df.columns[col])
+        for row in range(self.df.shape[0]):
+            for col in range(self.df.shape[1]):
+                self.grid.SetCellValue(row, col, str(self.df.iloc[row, col]))
+        self.grid.EnableEditing(True)
+        self.grid.Bind(gridlib.EVT_GRID_CELL_CHANGED, self.OnCellChanged)
+        self.grid.SetPosition((218, 0))
+        self.grid.SetSize((827, 720))
+
+    def OnCellChanged(self, event):
+        row = event.GetRow()
+        col = event.GetCol()
+        value = self.grid.GetCellValue(row, col)
+        if col == 0 or col == 2 or col == 4:
+            value = int(value)
+        self.df.iloc[row, col] = value
+        self.df.to_csv('packages.csv', index=False)
+
+    def save_packages(self):
+        grid_data = []
+        for row in range(self.grid.GetNumberRows()):
+            row_data = [self.grid.GetCellValue(row, col) for col in range(self.grid.GetNumberCols())]
+            grid_data.append(row_data)
+        df = pd.DataFrame(grid_data, columns=[self.grid.GetColLabelValue(col) for col in range(self.grid.GetNumberCols())])
+        df.to_csv('packages.csv', index=False)
+
+
 # ________________ DESTROY WINDOW ________________ #
 
     def destroy_window(self):
+        self.label_result.SetLabel(self.no_text)
         try:
             self.canvas.Destroy()
+        except:
+            pass
+        try:
+            self.grid.Destroy()
         except:
             pass
 
