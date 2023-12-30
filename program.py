@@ -27,21 +27,13 @@ class MyFrame(wx.Frame):
 
         super(MyFrame, self).__init__(*args, **kw)
         self.panel = wx.Panel(self)
-
-        self.df = pd.read_csv("data/packages.csv")
-        self.dt = pd.read_csv("data/data.csv")
-        self.list_min_f = []
-        self.list_max_f = []
-        self.list_mean_f = []
-        self.X = []
-        self.best_result = ""
-        self.no_text = ""
-        self.time_to_the_end = ""
-
-        self.window = 'Map'
-        self.print_graph()
+        
+        self.parameters()
         self.buttons()
         self.variables()
+        
+        self.window = 'Map'
+        self.print_graph()
         
         self.panel.SetBackgroundColour(wx.Colour(50, 50, 50))
         self.SetSize((1280, 756))
@@ -50,17 +42,44 @@ class MyFrame(wx.Frame):
         self.Show(True)
 
 
+# ________________ PARAMETERS ________________ #
+        
+    def parameters(self):
+
+        self.df = pd.read_csv("data/packages.csv")
+        self.dt = pd.read_csv("data/data.csv")
+        self.dl = pd.read_csv("data/locomotives.csv")
+        self.dw = pd.read_csv("data/wagons.csv")
+
+        self.list_min_f = []
+        self.list_max_f = []
+        self.list_mean_f = []
+        self.X = []
+        self.best_result = ""
+        self.no_text = ""
+        self.time_to_the_end = ""
+        self.G = gp.Graph()
+        self.image = mpimg.imread("data\poland.png")
+        self.thread = None
+        self.stop_event = threading.Event()
+
+
 # ________________ BUTTONS ________________ #
         
     def buttons(self):
 
         self.close_button()
         self.start_button()
+        self.stop_button()
         self.graph_button()
         self.chart_button()
         self.result_button()
         self.packages_button()
-
+        self.trains_button()
+        self.nexttrain_button_()
+        self.previoustrain_button_()
+        self.showtrack_button_()
+        
 
 # ________________ VARIABLES ________________ #
 
@@ -68,47 +87,67 @@ class MyFrame(wx.Frame):
 
         self.variable_size_population = wx.TextCtrl(self.panel, style=wx.TE_PROCESS_ENTER)
         self.variable_size_population.SetValue("100")
-        self.variable_size_population.SetPosition((1100, 350))
+        self.variable_size_population.SetPosition((1100, 250))
         self.label_size_population = wx.StaticText(self.panel, label="Size population")
-        self.label_size_population.SetPosition((1100, 333))
+        self.label_size_population.SetPosition((1100, 233))
         self.label_size_population.SetForegroundColour(wx.Colour(255, 255, 255))
 
         self.variable_epochs = wx.TextCtrl(self.panel, style=wx.TE_PROCESS_ENTER)
-        self.variable_epochs.SetValue("100")
-        self.variable_epochs.SetPosition((1100, 400))
+        self.variable_epochs.SetValue("50")
+        self.variable_epochs.SetPosition((1100, 300))
         self.label_epochs = wx.StaticText(self.panel, label="Number of epochs")
-        self.label_epochs.SetPosition((1100, 383))
+        self.label_epochs.SetPosition((1100, 283))
         self.label_epochs.SetForegroundColour(wx.Colour(255, 255, 255))
 
         self.variable_previous_population = wx.TextCtrl(self.panel, style=wx.TE_PROCESS_ENTER)
-        self.variable_previous_population.SetValue("1")
-        self.variable_previous_population.SetPosition((1100, 450))
+        self.variable_previous_population.SetValue("10")
+        self.variable_previous_population.SetPosition((1100, 350))
         self.label_previous_population = wx.StaticText(self.panel, label="Previous population in %")
-        self.label_previous_population.SetPosition((1100, 433))
+        self.label_previous_population.SetPosition((1100, 333))
         self.label_previous_population.SetForegroundColour(wx.Colour(255, 255, 255))
 
         self.variable_mutate_power = wx.TextCtrl(self.panel, style=wx.TE_PROCESS_ENTER)
         self.variable_mutate_power.SetValue("5")
-        self.variable_mutate_power.SetPosition((1100, 500))
+        self.variable_mutate_power.SetPosition((1100, 400))
         self.label_mutate_power = wx.StaticText(self.panel, label="Mutate power in %")
-        self.label_mutate_power.SetPosition((1100, 483))
+        self.label_mutate_power.SetPosition((1100, 383))
         self.label_mutate_power.SetForegroundColour(wx.Colour(255, 255, 255))
 
         self.variable_number_of_trains = wx.TextCtrl(self.panel, style=wx.TE_PROCESS_ENTER)
         self.variable_number_of_trains.SetValue("6")
-        self.variable_number_of_trains.SetPosition((1100, 550))
+        self.variable_number_of_trains.SetPosition((1100, 450))
         self.label_number_of_trains = wx.StaticText(self.panel, label="Number of trains")
-        self.label_number_of_trains.SetPosition((1100, 533))
+        self.label_number_of_trains.SetPosition((1100, 433))
         self.label_number_of_trains.SetForegroundColour(wx.Colour(255, 255, 255))
 
+        self.variable_city_start = wx.TextCtrl(self.panel, style=wx.TE_PROCESS_ENTER)
+        self.variable_city_start.SetValue("4")
+        self.variable_city_start.SetPosition((1100, 500))
+        self.label_city_start = wx.StaticText(self.panel, label="Start city ID")
+        self.label_city_start.SetPosition((1100, 483))
+        self.label_city_start.SetForegroundColour(wx.Colour(255, 255, 255))
+
         self.label_time_to_end = wx.StaticText(self.panel, label = "Ready to start")
-        self.label_time_to_end.SetPosition((1100, 633))
+        self.label_time_to_end.SetPosition((1100, 583))
         self.label_time_to_end.SetForegroundColour(wx.Colour(255, 255, 255))
 
         self.label_result = wx.StaticText(self.panel, label=self.no_text, style=wx.ALIGN_LEFT)
-        self.label_result.Wrap(827)
+        self.label_result.Wrap(800)
         self.label_result.SetPosition((218, 0))
         self.label_result.SetForegroundColour(wx.Colour(255, 255, 255))
+
+        self.label_track_train = wx.StaticText(self.panel, label=self.no_text, style=wx.ALIGN_LEFT)
+        self.label_track_train.Wrap(200)
+        self.label_track_train.SetPosition((20, 400))
+        self.label_track_train.SetForegroundColour(wx.Colour(255, 255, 255))
+
+        self.variable_train_number = wx.TextCtrl(self.panel, style=wx.TE_READONLY)
+        self.variable_train_number.SetValue("1")
+        self.variable_train_number.SetPosition((94, 250))
+        self.variable_train_number.SetSize((30, 30))
+        self.label_train_number = wx.StaticText(self.panel, label="Train number")
+        self.label_train_number.SetPosition((54, 233))
+        self.label_train_number.SetForegroundColour(wx.Colour(255, 255, 255))
 
 
 # ________________ START BUTTON ________________ #
@@ -131,12 +170,13 @@ class MyFrame(wx.Frame):
         self.destroy_window()
         self.print_chart()
         self.window = 'Chart'
-        self.label_time_to_end.SetLabel("Generating start population")
+        self.label_time_to_end.SetLabel("Generating first population")
 
         pub.subscribe(self.update_chart, 'update_chart')
         pub.subscribe(self.time_to_end, 'update_time')
-        thread = threading.Thread(target = self.start_algorithm)
-        thread.start()
+        self.thread = threading.Thread(target = self.start_algorithm)
+        self.stop_event.clear()
+        self.thread.start()
 
     def start_algorithm(self):
 
@@ -150,27 +190,24 @@ class MyFrame(wx.Frame):
         previous_population = int(self.variable_previous_population.GetValue())
         mutate_power = int(self.variable_mutate_power.GetValue())
         number_of_trains = int(self.variable_number_of_trains.GetValue())
+        start_city = int(self.variable_city_start.GetValue())
 
-        SL =[[50, 4], 
-            [35, 2], 
-            [45, 3]]
-    
-        SW =   [[30, 30, 100],
-                [20, 15, 50],
-                [15, 20, 30]]
-
-        new_ag = ag.Algorithm(SL, SW, n = number_of_trains)
+        new_ag = ag.Algorithm(n = number_of_trains)
         
         population, previous, mutate = new_ag.start_AG(
                                 size_population = size_population,  
                                 previous_population = previous_population,
-                                mutate_power = mutate_power)
+                                mutate_power = mutate_power,
+                                start = start_city)
         
         for i in range(epochs):
 
+            if self.stop_event.is_set():
+                break
+
             start_time = time.time()
 
-            population = new_ag.loop_AG(population, size_population, previous, mutate)
+            population = new_ag.loop_AG(population, size_population, previous, mutate, start_city)
             goal_functions = [x.f for x in population]
 
             X.append(i + 1)
@@ -188,10 +225,12 @@ class MyFrame(wx.Frame):
             pub.sendMessage('update_time', time_ = int(time_))
             
         best_id = goal_functions.index(min(goal_functions))
-        self.best_result = str(population[best_id])
+        self.best_result = population[best_id]
+        self.variable_train_number.SetValue(str(1))
+        pub.sendMessage('update_time', time_ = int(0))
 
     def time_to_end(self, time_):
-        self.time_to_the_end = ""
+        self.time_to_the_end = "Time to end: "
         if time_ >= 3600:
             self.time_to_the_end += str(time_//3600) + " h "
         if time_ >= 60:
@@ -204,12 +243,36 @@ class MyFrame(wx.Frame):
 
     def start_button(self):
 
-        self.start_button = wx.Button(self.panel, label = "Start", size = (110, 30))
+        self.start_button = wx.Button(self.panel, label = "Start AG", size = (110, 30))
         self.start_button.Bind(wx.EVT_ENTER_WINDOW, self.on_start_enter)
         self.start_button.Bind(wx.EVT_LEAVE_WINDOW, self.on_start_leave)
         self.Bind(wx.EVT_BUTTON, self.click_start_button, self.start_button)
         self.start_button.SetBackgroundColour(wx.Colour(0, 128, 255))
-        self.start_button.SetPosition((1100, 650))
+        self.start_button.SetPosition((1100, 600))
+
+    
+# ________________ STOP BUTTON ________________ #
+        
+    def on_stop_enter(self, event):
+        self.stop_button.SetBackgroundColour(wx.Colour(255, 165, 0))  # R, G, B
+        self.stop_button.Refresh()
+
+    def on_stop_leave(self, event):
+        self.stop_button.SetBackgroundColour(wx.Colour(0, 128, 255))
+        self.stop_button.Refresh()
+
+    def click_stop_button(self, event):
+        self.stop_event.set()
+
+    def stop_button(self):
+
+        self.stop_button = wx.Button(self.panel, label = "Stop AG", size = (110, 30))
+        self.stop_button.Bind(wx.EVT_ENTER_WINDOW, self.on_stop_enter)
+        self.stop_button.Bind(wx.EVT_LEAVE_WINDOW, self.on_stop_leave)
+        self.Bind(wx.EVT_BUTTON, self.click_stop_button, self.stop_button)
+        self.stop_button.SetBackgroundColour(wx.Colour(0, 128, 255))
+        self.stop_button.SetPosition((1100, 650))
+
 
 # ________________ CLOSE BUTTON ________________ #
         
@@ -297,7 +360,7 @@ class MyFrame(wx.Frame):
     def click_result_button(self, event):
         self.destroy_window()
         self.window = 'Result'
-        self.label_result.SetLabel(self.best_result)
+        self.label_result.SetLabel(str(self.best_result))
 
     def result_button(self):
 
@@ -331,7 +394,7 @@ class MyFrame(wx.Frame):
         self.packages_button.Bind(wx.EVT_LEAVE_WINDOW, self.on_packages_leave)
         self.Bind(wx.EVT_BUTTON, self.click_packages_button, self.packages_button)
         self.packages_button.SetBackgroundColour(wx.Colour(0, 128, 255))
-        self.packages_button.SetPosition((1100, 150))
+        self.packages_button.SetPosition((1100, 100))
 
 
 # ________________ ADD ROW BUTTON ________________ #
@@ -409,6 +472,7 @@ class MyFrame(wx.Frame):
 
         new_df.to_csv("data/packages.csv", index=False)
         self.df = pd.read_csv("data/packages.csv")
+        self.destroy_window()
         self.print_packages()
 
     def randompackages_button_(self):
@@ -421,16 +485,237 @@ class MyFrame(wx.Frame):
         self.randompackages_button.SetPosition((800, 500))
 
 
+# ________________ TRAINS BUTTON ________________ #
+        
+    def on_trains_enter(self, event):
+        self.trains_button.SetBackgroundColour(wx.Colour(255, 165, 0))
+        self.trains_button.Refresh()
+
+    def on_trains_leave(self, event):
+        self.trains_button.SetBackgroundColour(wx.Colour(0, 128, 255))
+        self.trains_button.Refresh()
+
+    def click_trains_button(self, event):
+        self.destroy_window()
+        self.window = 'Trains'
+        self.print_trains()
+
+    def trains_button(self):
+        self.trains_button = wx.Button(self.panel, label = "Trains", size = (110, 30))
+        self.trains_button.Bind(wx.EVT_ENTER_WINDOW, self.on_trains_enter)
+        self.trains_button.Bind(wx.EVT_LEAVE_WINDOW, self.on_trains_leave)
+        self.Bind(wx.EVT_BUTTON, self.click_trains_button, self.trains_button)
+        self.trains_button.SetBackgroundColour(wx.Colour(0, 128, 255))
+        self.trains_button.SetPosition((1100, 150))
+
+
+# ________________ ADD ROW LOC BUTTON ________________ #
+        
+    def on_addrowloc_enter(self, event):
+        self.addrowloc_button.SetBackgroundColour(wx.Colour(255, 165, 0))
+        self.addrowloc_button.Refresh()
+
+    def on_addrowloc_leave(self, event):
+        self.addrowloc_button.SetBackgroundColour(wx.Colour(0, 128, 255))
+        self.addrowloc_button.Refresh()
+
+    def click_addrowloc_button(self, event):
+        self.add_row_loc()
+
+    def addrowloc_button_(self):
+        self.addrowloc_button = wx.Button(self.panel, label = "Add row", size = (110, 30))
+        self.addrowloc_button.Bind(wx.EVT_ENTER_WINDOW, self.on_addrowloc_enter)
+        self.addrowloc_button.Bind(wx.EVT_LEAVE_WINDOW, self.on_addrowloc_leave)
+        self.Bind(wx.EVT_BUTTON, self.click_addrowloc_button, self.addrowloc_button)
+        self.addrowloc_button.SetBackgroundColour(wx.Colour(0, 128, 255))
+        self.addrowloc_button.SetPosition((800, 50))
+
+
+# ________________ DELETE ROWS LOC BUTTON ________________ #
+
+    def on_deleterowloc_enter(self, event):
+        self.deleterowloc_button.SetBackgroundColour(wx.Colour(255, 165, 0))
+        self.deleterowloc_button.Refresh()
+
+    def on_deleterowloc_leave(self, event):
+        self.deleterowloc_button.SetBackgroundColour(wx.Colour(0, 128, 255))
+        self.deleterowloc_button.Refresh()
+
+    def click_deleterowloc_button(self, event):
+        self.delete_rows_loc()
+
+    def deleterowsloc_button_(self):
+        self.deleterowloc_button = wx.Button(self.panel, label = "Delete rows", size = (110, 30))
+        self.deleterowloc_button.Bind(wx.EVT_ENTER_WINDOW, self.on_deleterowloc_enter)
+        self.deleterowloc_button.Bind(wx.EVT_LEAVE_WINDOW, self.on_deleterowloc_leave)
+        self.Bind(wx.EVT_BUTTON, self.click_deleterowloc_button, self.deleterowloc_button)
+        self.deleterowloc_button.SetBackgroundColour(wx.Colour(0, 128, 255))
+        self.deleterowloc_button.SetPosition((800, 100))
+
+
+# ________________ ADD ROW WAG BUTTON ________________ #
+        
+    def on_addrowwag_enter(self, event):
+        self.addrowwag_button.SetBackgroundColour(wx.Colour(255, 165, 0))
+        self.addrowwag_button.Refresh()
+
+    def on_addrowwag_leave(self, event):
+        self.addrowwag_button.SetBackgroundColour(wx.Colour(0, 128, 255))
+        self.addrowwag_button.Refresh()
+
+    def click_addrowwag_button(self, event):
+        self.add_row_wag()
+
+    def addrowwag_button_(self):
+        self.addrowwag_button = wx.Button(self.panel, label = "Add row", size = (110, 30))
+        self.addrowwag_button.Bind(wx.EVT_ENTER_WINDOW, self.on_addrowwag_enter)
+        self.addrowwag_button.Bind(wx.EVT_LEAVE_WINDOW, self.on_addrowwag_leave)
+        self.Bind(wx.EVT_BUTTON, self.click_addrowwag_button, self.addrowwag_button)
+        self.addrowwag_button.SetBackgroundColour(wx.Colour(0, 128, 255))
+        self.addrowwag_button.SetPosition((800, 410))
+
+
+# ________________ DELETE ROWS WAG BUTTON ________________ #
+
+    def on_deleterowwag_enter(self, event):
+        self.deleterowwag_button.SetBackgroundColour(wx.Colour(255, 165, 0))
+        self.deleterowwag_button.Refresh()
+
+    def on_deleterowwag_leave(self, event):
+        self.deleterowwag_button.SetBackgroundColour(wx.Colour(0, 128, 255))
+        self.deleterowwag_button.Refresh()
+
+    def click_deleterowwag_button(self, event):
+        self.delete_rows_wag()
+
+    def deleterowswag_button_(self):
+        self.deleterowwag_button = wx.Button(self.panel, label = "Delete rows", size = (110, 30))
+        self.deleterowwag_button.Bind(wx.EVT_ENTER_WINDOW, self.on_deleterowwag_enter)
+        self.deleterowwag_button.Bind(wx.EVT_LEAVE_WINDOW, self.on_deleterowwag_leave)
+        self.Bind(wx.EVT_BUTTON, self.click_deleterowwag_button, self.deleterowwag_button)
+        self.deleterowwag_button.SetBackgroundColour(wx.Colour(0, 128, 255))
+        self.deleterowwag_button.SetPosition((800, 460))
+
+
+# ________________ NEXT TRAIN BUTTON ________________ #
+
+    def on_nexttrain_enter(self, event):
+        self.nexttrain_button.SetBackgroundColour(wx.Colour(255, 165, 0))
+        self.nexttrain_button.Refresh()
+
+    def on_nexttrain_leave(self, event):
+        self.nexttrain_button.SetBackgroundColour(wx.Colour(0, 128, 255))
+        self.nexttrain_button.Refresh()
+
+    def click_nexttrain_button(self, event):
+        train_number = int(self.variable_train_number.GetValue())
+        try:
+            if train_number + 1 <= len(self.best_result.DT):
+                self.variable_train_number.SetValue(str(train_number + 1))
+        except:
+            pass
+
+    def nexttrain_button_(self):
+
+        self.nexttrain_button = wx.Button(self.panel, label = "+", size = (40, 30))
+        self.nexttrain_button.Bind(wx.EVT_ENTER_WINDOW, self.on_nexttrain_enter)
+        self.nexttrain_button.Bind(wx.EVT_LEAVE_WINDOW, self.on_nexttrain_leave)
+        self.Bind(wx.EVT_BUTTON, self.click_nexttrain_button, self.nexttrain_button)
+        self.nexttrain_button.SetBackgroundColour(wx.Colour(0, 128, 255))
+        self.nexttrain_button.SetPosition((124, 250))
+
+
+# ________________ PREVIOUS TRAIN BUTTON ________________ #
+
+    def on_previoustrain_enter(self, event):
+        self.previoustrain_button.SetBackgroundColour(wx.Colour(255, 165, 0))
+        self.previoustrain_button.Refresh()
+
+    def on_previoustrain_leave(self, event):
+        self.previoustrain_button.SetBackgroundColour(wx.Colour(0, 128, 255))
+        self.previoustrain_button.Refresh()
+
+    def click_previoustrain_button(self, event):
+        train_number = int(self.variable_train_number.GetValue())
+        try:
+            if train_number - 1 >= 1:
+                self.variable_train_number.SetValue(str(train_number - 1))
+        except:
+            pass
+
+    def previoustrain_button_(self):
+
+        self.previoustrain_button = wx.Button(self.panel, label = "-", size = (40, 30))
+        self.previoustrain_button.Bind(wx.EVT_ENTER_WINDOW, self.on_previoustrain_enter)
+        self.previoustrain_button.Bind(wx.EVT_LEAVE_WINDOW, self.on_previoustrain_leave)
+        self.Bind(wx.EVT_BUTTON, self.click_previoustrain_button, self.previoustrain_button)
+        self.previoustrain_button.SetBackgroundColour(wx.Colour(0, 128, 255))
+        self.previoustrain_button.SetPosition((54, 250))
+
+
+# ________________ SHOW TRACK BUTTON ________________ #
+
+    def on_showtrack_enter(self, event):
+        self.showtrack_button.SetBackgroundColour(wx.Colour(255, 165, 0))
+        self.showtrack_button.Refresh()
+
+    def on_showtrack_leave(self, event):
+        self.showtrack_button.SetBackgroundColour(wx.Colour(0, 128, 255))
+        self.showtrack_button.Refresh()
+
+    def click_showtrack_button(self, event):
+        self.destroy_window()
+        
+        try:
+            track = self.best_result.DT[int(self.variable_train_number.GetValue())]
+            self.print_graph_track(track)
+            text = ""
+            i = 0
+            for elem in track:
+                text += "(" + str(int(elem[0])) + ")" + " " + str(self.dt['City'][elem[0] - 1]) + " -> "
+                if i == 1:
+                    text += "\n"
+                    i = 0
+                else:
+                    i += 1
+            text += "(" + str(int(track[-1][1])) + ")" + " " + str(self.dt['City'][track[-1][1] - 1])
+            self.label_track_train.SetLabel(text)
+        except:
+            pass 
+
+    def showtrack_button_(self):
+
+        self.showtrack_button = wx.Button(self.panel, label = "Show track", size = (110, 30))
+        self.showtrack_button.Bind(wx.EVT_ENTER_WINDOW, self.on_showtrack_enter)
+        self.showtrack_button.Bind(wx.EVT_LEAVE_WINDOW, self.on_showtrack_leave)
+        self.Bind(wx.EVT_BUTTON, self.click_showtrack_button, self.showtrack_button)
+        self.showtrack_button.SetBackgroundColour(wx.Colour(0, 128, 255))
+        self.showtrack_button.SetPosition((54, 300))
+
+
 # ________________ GRAPH ________________ #
 
     def print_graph(self):
 
-        G = gp.Graph()
-        image = mpimg.imread("data\poland.png")
         self.figure, self.ax = plt.subplots()
-        plt.imshow(image)
-        pos = nx.get_node_attributes(G.G, 'coordinates')
-        nx.draw(G.G, ax=self.ax, pos = pos, with_labels=True, font_weight='bold')
+        plt.imshow(self.image)
+        pos = nx.get_node_attributes(self.G.G, 'coordinates')
+        edge_labels = {(u, v): d['weight'] for u, v, d in self.G.G.edges(data=True)}
+        nx.draw(self.G.G, ax=self.ax, pos = pos, with_labels=True, font_weight='bold')
+        nx.draw_networkx_edge_labels(self.G.G, pos = pos, edge_labels = edge_labels, font_color = 'red', font_size = 7)
+        self.ax.set_position([0, 0, 1, 1])
+        self.canvas = FigureCanvas(self.panel, -1, self.figure)
+        self.canvas.SetSize(218, 0, 827, 720)
+
+    def print_graph_track(self, way):
+
+        self.figure, self.ax = plt.subplots()
+        plt.imshow(self.image)
+        pos = nx.get_node_attributes(self.G.G, 'coordinates')
+        edge_labels = {(u, v): d['weight'] for u, v, d in self.G.G.edges(data=True)}
+        nx.draw(self.G.G, pos = pos, with_labels = True)
+        nx.draw_networkx_edges(self.G.G, pos = pos, edgelist = way, width = 3, edge_color = 'red')
+        nx.draw_networkx_edge_labels(self.G.G, pos = pos, edge_labels = edge_labels, font_color = 'red', font_size = 7)
         self.ax.set_position([0, 0, 1, 1])
         self.canvas = FigureCanvas(self.panel, -1, self.figure)
         self.canvas.SetSize(218, 0, 827, 720)
@@ -447,7 +732,7 @@ class MyFrame(wx.Frame):
         self.ax.plot(self.X, self.list_mean_f, label = "Mean goal function in epoch")
         self.ax.set_xlabel('Number of epoch', color = 'white')
         self.ax.set_ylabel('Goal function value', color = 'white')
-        self.ax.set_title('Genetic Algorithm chart', color='white')
+        self.ax.set_title('Genetic Algorithm chart', color = 'white')
         self.ax.legend()
         self.ax.grid()
         self.figure.patch.set_facecolor('black')
@@ -607,12 +892,105 @@ class MyFrame(wx.Frame):
         self.label_max_packages.SetPosition((800, 383))
         self.label_max_packages.SetForegroundColour(wx.Colour(255, 255, 255))
 
+
+# ________________ TRAINS ________________ # 
         
+    def print_trains(self):
+        self.print_locomotives()
+        self.print_wagons()
+        self.addrowloc_button_()
+        self.deleterowsloc_button_()
+        self.addrowwag_button_()
+        self.deleterowswag_button_()
+
+
+# ________________ LOCOMOTIVES ________________ #
+        
+    def print_locomotives(self):
+        self.grid_l = gridlib.Grid(self.panel)
+        self.grid_l.CreateGrid(self.dl.shape[0], self.dl.shape[1])
+        for col in range(self.dl.shape[1]):
+            self.grid_l.SetColLabelValue(col, str(self.dl.columns[col]))
+        for row in range(self.dl.shape[0]):
+            for col in range(self.dl.shape[1]):
+                self.grid_l.SetCellValue(row, col, str(self.dl.iloc[row, col]))
+        self.grid_l.EnableEditing(True)
+        self.grid_l.SetPosition((218, 0))
+        self.grid_l.SetSize((499, 360))
+        self.grid_l.Bind(gridlib.EVT_GRID_CELL_CHANGED, self.on_grid_cell_changed_locomotives)
+
+    def on_grid_cell_changed_locomotives(self, event):
+        row = event.GetRow()
+        col = event.GetCol()
+        new_value = self.grid_l.GetCellValue(row, col)
+        self.dl.iloc[row, col] = int(new_value)
+        self.dl.to_csv("data/locomotives.csv", index=False)
+
+    def add_row_loc(self):
+        new_row = pd.Series(['', ''], index=self.dl.columns)
+        self.dl = self.dl._append(new_row, ignore_index=True)
+        num_rows, num_cols = self.grid_l.GetNumberRows(), self.grid_l.GetNumberCols()
+        self.grid_l.AppendRows(1)
+        for col, value in enumerate(new_row):
+            self.grid_l.SetCellValue(num_rows, col, str(value))
+        self.dl.to_csv('data/locomotives.csv', index=False)
+
+    def delete_rows_loc(self):
+        self.dl = self.dl.dropna()
+        self.destroy_window()
+        self.dl.to_csv('data/locomotives.csv', index=False)
+        self.dl = pd.read_csv('data/locomotives.csv')
+        self.dl = self.dl.dropna()
+        self.dl.to_csv('data/locomotives.csv', index=False)
+        self.print_trains()
+        
+
+# ________________ WAGONS ________________ #
+
+    def print_wagons(self):
+        self.grid_w = gridlib.Grid(self.panel)
+        self.grid_w.CreateGrid(self.dw.shape[0], self.dw.shape[1])
+        for col in range(self.dw.shape[1]):
+            self.grid_w.SetColLabelValue(col, str(self.dw.columns[col]))
+        for row in range(self.dw.shape[0]):
+            for col in range(self.dw.shape[1]):
+                self.grid_w.SetCellValue(row, col, str(self.dw.iloc[row, col]))
+        self.grid_w.EnableEditing(True)
+        self.grid_w.SetPosition((218, 360))
+        self.grid_w.SetSize((499, 360))
+        self.grid_w.Bind(gridlib.EVT_GRID_CELL_CHANGED, self.on_grid_cell_changed_wagons)
+
+    def on_grid_cell_changed_wagons(self, event):
+        row = event.GetRow()
+        col = event.GetCol()
+        new_value = self.grid_w.GetCellValue(row, col)
+        self.dw.iloc[row, col] = int(new_value)
+        self.dw.to_csv("data/wagons.csv", index=False)
+
+    def add_row_wag(self):
+        new_row = pd.Series(['', '', ''], index=self.dw.columns)
+        self.dw = self.dw._append(new_row, ignore_index=True)
+        num_rows, num_cols = self.grid_w.GetNumberRows(), self.grid_w.GetNumberCols()
+        self.grid_w.AppendRows(1)
+        for col, value in enumerate(new_row):
+            self.grid_w.SetCellValue(num_rows, col, str(value))
+        self.dw.to_csv('data/wagons.csv', index=False)
+
+    def delete_rows_wag(self):
+        self.dw = self.dw.dropna()
+        self.destroy_window()
+        self.dw.to_csv('data/wagons.csv', index=False)
+        self.dw = pd.read_csv('data/wagons.csv')
+        self.dw = self.dw.dropna()
+        self.dw.to_csv('data/wagons.csv', index=False)
+        self.print_trains()
+
 
 # ________________ DESTROY WINDOW ________________ #
 
     def destroy_window(self):
         self.label_result.SetLabel(self.no_text)
+        self.label_track_train.SetLabel(self.no_text)
         try:
             self.canvas.Destroy()
         except:
@@ -628,6 +1006,15 @@ class MyFrame(wx.Frame):
             self.label_max_packages.Destroy()
             self.label_min_packages.Destroy()
             self.label_number_rows.Destroy()
+        except:
+            pass
+        try:
+            self.grid_l.Destroy()
+            self.grid_w.Destroy()
+            self.addrowloc_button.Destroy()
+            self.deleterowloc_button.Destroy()
+            self.addrowwag_button.Destroy()
+            self.deleterowwag_button.Destroy()
         except:
             pass
 

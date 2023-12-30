@@ -23,27 +23,26 @@ sys.setrecursionlimit(10000)
 class Algorithm:
 
 
-    def __init__(self, SL, SW, n):
+    def __init__(self, n):
 
         self.load_csv = ld.Load_csv()
         self.graph = gp.Graph()
-        self.fn = fn.Functions(n, SW)
 
-        self.SL = SL
-        self.SW = SW
+        self.SL = self.load_csv.read_locomotives()
+        self.SW = self.load_csv.read_wagons()
         self.SP = self.load_csv.read_packages()
         self.SC = self.load_csv.read_coordinates()
         self.SG = self.graph.G
 
         self.n = n
-
+        self.fn = fn.Functions(n, self.SW)
         self.fp = fp.First_population(self.n, 
                     self.SL, self.SW, self.SP, self.SC, self.SG)
 
 
-    def AG(self, size_population = 1000, epochs = 50, previous_population = 5, mutate_power = 5):
+    def AG(self, size_population = 1000, epochs = 50, previous_population = 5, mutate_power = 5, start = 4):
 
-        population = self.fp.generate_first_population(size_population)
+        population = self.fp.generate_first_population(size_population, start)
 
         actually_population = population
         previous_population = int(previous_population / 100 * size_population)
@@ -69,7 +68,7 @@ class Algorithm:
             actually_population = actually_population[:previous_population]
             population_to_mutate = copy.deepcopy(actually_population)
 
-            args = (population_to_mutate, mutate_power)
+            args = (population_to_mutate, mutate_power, start)
 
             while len(actually_population) < size_population:
                 actually_population.append(self.mutate_population(args))
@@ -107,22 +106,22 @@ class Algorithm:
         return best_result
     
 
-    def start_AG(self, size_population = 1000, previous_population = 5, mutate_power = 5):
+    def start_AG(self, size_population = 1000, previous_population = 5, mutate_power = 5, start = 4):
 
-        population = self.fp.generate_first_population(size_population)
+        population = self.fp.generate_first_population(size_population, start)
         previous_population = int(previous_population / 100 * size_population)
         mutate_power = int(mutate_power / 100 * self.n * 10)
 
         return population, previous_population, mutate_power
     
 
-    def loop_AG(self, actually_population, size_population, previous_population, mutate_power):
+    def loop_AG(self, actually_population, size_population, previous_population, mutate_power, start = 4):
 
         actually_population = self.fn.sort(actually_population)
         actually_population = actually_population[:previous_population]
         population_to_mutate = copy.deepcopy(actually_population)
 
-        args = (population_to_mutate, mutate_power)
+        args = (population_to_mutate, mutate_power, start)
         results_queue = queue.Queue()
 
         loop = (size_population - len(actually_population))//7
@@ -165,13 +164,13 @@ class Algorithm:
 
     def mutate_population(self, args):
 
-        population, mutate_power = args
+        population, mutate_power, start = args
         result_id = random.randint(0, len(population) - 1)
 
-        return self.mutate_points(population[result_id], mutate_power)
+        return self.mutate_points(population[result_id], mutate_power, start)
 
 
-    def mutate_points(self, result, mutate_power):
+    def mutate_points(self, result, mutate_power, start):
         
         new_result = copy.deepcopy(result)
 
@@ -184,8 +183,8 @@ class Algorithm:
             new_result.HP[train_min_track].append(new_result.HP[train_max_track][point_id])
             del new_result.HP[train_max_track][point_id]
 
-            new_result.DT[train_max_track] = self.fn.generate_track(new_result.HP[train_max_track], 4, self.SG)
-            new_result.DT[train_min_track] = self.fn.generate_track(new_result.HP[train_min_track], 4, self.SG)
+            new_result.DT[train_max_track] = self.fn.generate_track(new_result.HP[train_max_track], start, self.SG)
+            new_result.DT[train_min_track] = self.fn.generate_track(new_result.HP[train_min_track], start, self.SG)
             new_result.solve_HL(train_max_track)
             new_result.solve_HL(train_min_track)
             new_result.solve_HF(train_max_track)
@@ -197,7 +196,7 @@ class Algorithm:
             test_result = copy.deepcopy(new_result)
 
             random.shuffle(test_result.HP[train_max_track])
-            test_result.DT[train_max_track] = self.fn.generate_track(test_result.HP[train_max_track], 4, self.SG)
+            test_result.DT[train_max_track] = self.fn.generate_track(test_result.HP[train_max_track], start, self.SG)
             test_result.solve_HL(train_max_track)
 
             itr = 0
@@ -205,7 +204,7 @@ class Algorithm:
             while test_result.HL[train_max_track] > new_result.HL[train_max_track]:
 
                 random.shuffle(test_result.HP[train_max_track])
-                test_result.DT[train_max_track] = self.fn.generate_track(test_result.HP[train_max_track], 4, self.SG)
+                test_result.DT[train_max_track] = self.fn.generate_track(test_result.HP[train_max_track], start, self.SG)
                 test_result.solve_HL(train_max_track)
                 itr += 1
 

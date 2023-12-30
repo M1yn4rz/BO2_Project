@@ -11,6 +11,8 @@ class Load_csv:
         self.__data_n = len(self.__data)
         self.__packages = pd.read_csv('data\packages.csv')
         self.__packages_n = len(self.__packages)
+        self.__locomotives = pd.read_csv('data/locomotives.csv')
+        self.__wagons = pd.read_csv('data/wagons.csv')
 
 
     def read_coordinates(self):
@@ -38,3 +40,10 @@ class Load_csv:
             packages[row[0]].append([row[2], row[4]])
 
         return packages
+    
+
+    def read_locomotives(self):
+        return self.__locomotives.values.tolist()
+    
+    def read_wagons(self):
+        return self.__wagons.values.tolist()

@@ -23,7 +23,7 @@ class First_population:
         self.n = n
 
         
-    def generate_first_population(self, size_population):
+    def generate_first_population(self, size_population, start):
 
         population = []
         goal_functions = []
@@ -64,7 +64,7 @@ class First_population:
             one_result.HP = HP
             
             for i in range(len(HP)):
-                one_result.DT[i] = self.fn.generate_track(HP[i], 4, self.SG)
+                one_result.DT[i] = self.fn.generate_track(HP[i], start, self.SG)
 
             SL_copy = copy.deepcopy(self.SL)
             itr = 0
