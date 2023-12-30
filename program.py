@@ -29,6 +29,7 @@ class MyFrame(wx.Frame):
         self.panel = wx.Panel(self)
 
         self.df = pd.read_csv("data/packages.csv")
+        self.dt = pd.read_csv("data/data.csv")
         self.list_min_f = []
         self.list_max_f = []
         self.list_mean_f = []
@@ -38,7 +39,7 @@ class MyFrame(wx.Frame):
         self.time_to_the_end = ""
 
         self.window = 'Map'
-        # self.print_graph()
+        self.print_graph()
         self.buttons()
         self.variables()
         
@@ -236,7 +237,7 @@ class MyFrame(wx.Frame):
 # ________________ GRAPH BUTTON ________________ #
         
     def on_graph_enter(self, event):
-        self.graph_button.SetBackgroundColour(wx.Colour(255, 165, 0))  # R, G, B
+        self.graph_button.SetBackgroundColour(wx.Colour(255, 165, 0))
         self.graph_button.Refresh()
 
     def on_graph_leave(self, event):
@@ -333,6 +334,93 @@ class MyFrame(wx.Frame):
         self.packages_button.SetPosition((1100, 150))
 
 
+# ________________ ADD ROW BUTTON ________________ #
+        
+    def on_addrow_enter(self, event):
+        self.addrow_button.SetBackgroundColour(wx.Colour(255, 165, 0))
+        self.addrow_button.Refresh()
+
+    def on_addrow_leave(self, event):
+        self.addrow_button.SetBackgroundColour(wx.Colour(0, 128, 255))
+        self.addrow_button.Refresh()
+
+    def click_addrow_button(self, event):
+        self.add_row()
+
+    def addrow_button_(self):
+
+        self.addrow_button = wx.Button(self.panel, label = "Add row", size = (110, 30))
+        self.addrow_button.Bind(wx.EVT_ENTER_WINDOW, self.on_addrow_enter)
+        self.addrow_button.Bind(wx.EVT_LEAVE_WINDOW, self.on_addrow_leave)
+        self.Bind(wx.EVT_BUTTON, self.click_addrow_button, self.addrow_button)
+        self.addrow_button.SetBackgroundColour(wx.Colour(0, 128, 255))
+        self.addrow_button.SetPosition((800, 50))
+
+
+# ________________ DELETE ROWS BUTTON ________________ #
+
+    def on_deleterow_enter(self, event):
+        self.deleterow_button.SetBackgroundColour(wx.Colour(255, 165, 0))
+        self.deleterow_button.Refresh()
+
+    def on_deleterow_leave(self, event):
+        self.deleterow_button.SetBackgroundColour(wx.Colour(0, 128, 255))
+        self.deleterow_button.Refresh()
+
+    def click_deleterow_button(self, event):
+        self.delete_rows()
+
+    def deleterows_button_(self):
+
+        self.deleterow_button = wx.Button(self.panel, label = "Delete rows", size = (110, 30))
+        self.deleterow_button.Bind(wx.EVT_ENTER_WINDOW, self.on_deleterow_enter)
+        self.deleterow_button.Bind(wx.EVT_LEAVE_WINDOW, self.on_deleterow_leave)
+        self.Bind(wx.EVT_BUTTON, self.click_deleterow_button, self.deleterow_button)
+        self.deleterow_button.SetBackgroundColour(wx.Colour(0, 128, 255))
+        self.deleterow_button.SetPosition((800, 100))
+
+
+# ________________ RANDOM PACKAGES BUTTON ________________ #
+        
+    def on_randompackages_enter(self, event):
+        self.randompackages_button.SetBackgroundColour(wx.Colour(255, 165, 0))
+        self.randompackages_button.Refresh()
+
+    def on_randompackages_leave(self, event):
+        self.randompackages_button.SetBackgroundColour(wx.Colour(0, 128, 255))
+        self.randompackages_button.Refresh()
+
+    def click_randompackages_button(self, event):
+        number_rows = int(self.variable_number_rows.GetValue())
+        min_packages = int(self.variable_min_packages.GetValue())
+        max_packages = int(self.variable_max_packages.GetValue())
+
+        data = {'From ID' : [],'From city' : [],'To ID' : [],'To city' : [],'How many' : []}
+        new_df = pd.DataFrame(data)
+
+        for _ in range(number_rows):
+            from_city = random.randint(0, len(self.dt) - 1)
+            to_city = random.randint(0, len(self.dt) - 1)
+            while from_city == to_city:
+                to_city = random.randint(0, len(self.dt) - 1)
+            packages = random.randint(min_packages, max_packages)
+            new_row = {'From ID' : self.dt['ID'][from_city],'From city' : self.dt['City'][from_city],'To ID' : self.dt['ID'][to_city],'To city' : self.dt['City'][to_city],'How many' : packages}
+            new_df = new_df._append(new_row, ignore_index=True)
+
+        new_df.to_csv("data/packages.csv", index=False)
+        self.df = pd.read_csv("data/packages.csv")
+        self.print_packages()
+
+    def randompackages_button_(self):
+
+        self.randompackages_button = wx.Button(self.panel, label = "Random packages", size = (110, 30))
+        self.randompackages_button.Bind(wx.EVT_ENTER_WINDOW, self.on_randompackages_enter)
+        self.randompackages_button.Bind(wx.EVT_LEAVE_WINDOW, self.on_randompackages_leave)
+        self.Bind(wx.EVT_BUTTON, self.click_randompackages_button, self.randompackages_button)
+        self.randompackages_button.SetBackgroundColour(wx.Colour(0, 128, 255))
+        self.randompackages_button.SetPosition((800, 500))
+
+
 # ________________ GRAPH ________________ #
 
     def print_graph(self):
@@ -395,38 +483,131 @@ class MyFrame(wx.Frame):
 
 
 # ________________ Packages ________________ #
-            
+
     def print_packages(self):
 
         self.grid = gridlib.Grid(self.panel)
         self.grid.CreateGrid(self.df.shape[0], self.df.shape[1])
         for col in range(self.df.shape[1]):
-            self.grid.SetColLabelValue(col, self.df.columns[col])
+            self.grid.SetColLabelValue(col, str(self.df.columns[col]))
         for row in range(self.df.shape[0]):
             for col in range(self.df.shape[1]):
                 self.grid.SetCellValue(row, col, str(self.df.iloc[row, col]))
         self.grid.EnableEditing(True)
+        self.locked_columns = [0, 2]
+        self.choice_columns = [1, 3]
+        self.editable_column = 4
         self.grid.Bind(gridlib.EVT_GRID_CELL_CHANGED, self.OnCellChanged)
+        self.grid.Bind(gridlib.EVT_GRID_CELL_LEFT_CLICK, self.on_cell_left_click)
+        self.setup_columns()
         self.grid.SetPosition((218, 0))
-        self.grid.SetSize((827, 720))
+        self.grid.SetSize((499, 720))
+        self.addrow_button_()
+        self.deleterows_button_()
+        self.randompackages_button_()
+        self.packages_variables()
+
+    def setup_columns(self):
+        for col in range(self.df.shape[1]):
+            if col in self.locked_columns:
+                self.grid.SetReadOnly(0, col, isReadOnly=True)
+            elif col in self.choice_columns:
+                self.setup_choice_column(col)
+
+    def setup_choice_column(self, col):
+        choices = sorted(self.dt['City'].unique())
+        self.grid.SetCellEditor(0, col, gridlib.GridCellChoiceEditor(choices, allowOthers=False))
 
     def OnCellChanged(self, event):
         row = event.GetRow()
         col = event.GetCol()
         value = self.grid.GetCellValue(row, col)
-        if col == 0 or col == 2 or col == 4:
-            value = int(value)
-        self.df.iloc[row, col] = value
-        self.df.to_csv('packages.csv', index=False)
+        if col == self.editable_column:
+            self.df.iloc[row, col] = int(value)
+            self.df.to_csv('data/packages.csv', index=False)
 
-    def save_packages(self):
-        grid_data = []
-        for row in range(self.grid.GetNumberRows()):
-            row_data = [self.grid.GetCellValue(row, col) for col in range(self.grid.GetNumberCols())]
-            grid_data.append(row_data)
-        df = pd.DataFrame(grid_data, columns=[self.grid.GetColLabelValue(col) for col in range(self.grid.GetNumberCols())])
-        df.to_csv('packages.csv', index=False)
+    def on_cell_left_click(self, event):
+        row = event.GetRow()
+        col = event.GetCol()
 
+        if col == self.editable_column:
+            if not self.grid.IsReadOnly(row, col):
+                self.grid.SetGridCursor(row, col)
+        elif col in self.choice_columns:
+            self.show_choice_dialog(row, col)
+        else:
+            self.grid.DisableCellEditControl()
+
+    def show_choice_dialog(self, row, col):
+        column_name = self.df.columns[col]
+        cell_value = str(self.df.iloc[row, col])
+        choices = sorted(self.dt['City'].unique())
+
+        dlg = wx.SingleChoiceDialog(
+            self,
+            f'Wybierz wartość dla {column_name}',
+            'Edytuj wartość',
+            choices,
+            wx.CHOICEDLG_STYLE
+        )
+
+        initial_selection = choices.index(cell_value) if cell_value in choices else 0
+        dlg.SetSelection(initial_selection)
+
+        if dlg.ShowModal() == wx.ID_OK:
+            new_value = dlg.GetStringSelection()
+            self.df.at[row, column_name] = new_value
+            new_value_ID = self.dt.loc[self.dt['City'] == new_value, 'ID'].values[0]
+            self.df.iloc[row, col - 1] = int(new_value_ID)
+            self.grid.SetCellValue(row, col, str(new_value))
+            self.grid.SetCellValue(row, col - 1, str(new_value_ID))
+            self.df.to_csv('data/packages.csv', index=False)
+
+        dlg.Destroy()
+
+    def add_row(self):
+        new_row = pd.Series(['', '', '', '', ''], index=self.df.columns)
+        self.df = self.df._append(new_row, ignore_index=True)
+        num_rows, num_cols = self.grid.GetNumberRows(), self.grid.GetNumberCols()
+        self.grid.AppendRows(1)
+        for col, value in enumerate(new_row):
+            self.grid.SetCellValue(num_rows, col, str(value))
+        self.df.to_csv('data/packages.csv', index=False)
+
+    def delete_rows(self):
+
+        self.df = self.df.dropna()
+        self.destroy_window()
+        self.df.to_csv('data/packages.csv', index=False)
+        self.df = pd.read_csv('data/packages.csv')
+        self.df = self.df.dropna()
+        self.df.to_csv('data/packages.csv', index=False)
+        self.print_packages()
+
+    def packages_variables(self):
+
+        self.variable_number_rows = wx.TextCtrl(self.panel, style=wx.TE_PROCESS_ENTER)
+        self.variable_number_rows.SetValue("50")
+        self.variable_number_rows.SetPosition((800, 300))
+        self.label_number_rows = wx.StaticText(self.panel, label="Number of rows")
+        self.label_number_rows.SetPosition((800, 283))
+        self.label_number_rows.SetForegroundColour(wx.Colour(255, 255, 255))
+
+        self.variable_min_packages = wx.TextCtrl(self.panel, style=wx.TE_PROCESS_ENTER)
+        self.variable_min_packages.SetValue("30")
+        self.variable_min_packages.SetPosition((800, 350))
+        self.label_min_packages = wx.StaticText(self.panel, label="Min packages")
+        self.label_min_packages.SetPosition((800, 333))
+        self.label_min_packages.SetForegroundColour(wx.Colour(255, 255, 255))
+
+        self.variable_max_packages = wx.TextCtrl(self.panel, style=wx.TE_PROCESS_ENTER)
+        self.variable_max_packages.SetValue("150")
+        self.variable_max_packages.SetPosition((800, 400))
+        self.label_max_packages = wx.StaticText(self.panel, label="Max packages")
+        self.label_max_packages.SetPosition((800, 383))
+        self.label_max_packages.SetForegroundColour(wx.Colour(255, 255, 255))
+
+        
 
 # ________________ DESTROY WINDOW ________________ #
 
@@ -438,6 +619,15 @@ class MyFrame(wx.Frame):
             pass
         try:
             self.grid.Destroy()
+            self.addrow_button.Destroy()
+            self.deleterow_button.Destroy()
+            self.randompackages_button.Destroy()
+            self.variable_max_packages.Destroy()
+            self.variable_min_packages.Destroy()
+            self.variable_number_rows.Destroy()
+            self.label_max_packages.Destroy()
+            self.label_min_packages.Destroy()
+            self.label_number_rows.Destroy()
         except:
             pass
 
