@@ -52,9 +52,12 @@ class First_population:
                 HP[idx].append(elem[:-1])
 
                 if elem[0] not in one_result.DP[idx].keys():
-                    one_result.DP[idx][elem[0]] = []
+                    one_result.DP[idx][elem[0]] = {}
 
-                one_result.DP[idx][elem[0]].append([elem[1], elem[2]])
+                if elem[1] not in one_result.DP[idx][elem[0]].keys():
+                    one_result.DP[idx][elem[0]][elem[1]] = 0
+
+                one_result.DP[idx][elem[0]][elem[1]] += elem[2]
 
                 idx += 1
 

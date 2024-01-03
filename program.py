@@ -13,6 +13,7 @@ import sys
 import time
 import pandas as pd
 import wx.grid as gridlib
+from matplotlib.ticker import MaxNLocator
 
 
 
@@ -86,42 +87,42 @@ class MyFrame(wx.Frame):
     def variables(self):
 
         self.variable_size_population = wx.TextCtrl(self.panel, style=wx.TE_PROCESS_ENTER)
-        self.variable_size_population.SetValue("100")
+        self.variable_size_population.SetValue("250")
         self.variable_size_population.SetPosition((1100, 250))
         self.label_size_population = wx.StaticText(self.panel, label="Size population")
         self.label_size_population.SetPosition((1100, 233))
         self.label_size_population.SetForegroundColour(wx.Colour(255, 255, 255))
 
         self.variable_epochs = wx.TextCtrl(self.panel, style=wx.TE_PROCESS_ENTER)
-        self.variable_epochs.SetValue("50")
+        self.variable_epochs.SetValue("30")
         self.variable_epochs.SetPosition((1100, 300))
         self.label_epochs = wx.StaticText(self.panel, label="Number of epochs")
         self.label_epochs.SetPosition((1100, 283))
         self.label_epochs.SetForegroundColour(wx.Colour(255, 255, 255))
 
         self.variable_previous_population = wx.TextCtrl(self.panel, style=wx.TE_PROCESS_ENTER)
-        self.variable_previous_population.SetValue("10")
+        self.variable_previous_population.SetValue("20")
         self.variable_previous_population.SetPosition((1100, 350))
         self.label_previous_population = wx.StaticText(self.panel, label="Previous population in %")
         self.label_previous_population.SetPosition((1100, 333))
         self.label_previous_population.SetForegroundColour(wx.Colour(255, 255, 255))
 
         self.variable_mutate_power = wx.TextCtrl(self.panel, style=wx.TE_PROCESS_ENTER)
-        self.variable_mutate_power.SetValue("5")
+        self.variable_mutate_power.SetValue("10")
         self.variable_mutate_power.SetPosition((1100, 400))
         self.label_mutate_power = wx.StaticText(self.panel, label="Mutate power in %")
         self.label_mutate_power.SetPosition((1100, 383))
         self.label_mutate_power.SetForegroundColour(wx.Colour(255, 255, 255))
 
         self.variable_number_of_trains = wx.TextCtrl(self.panel, style=wx.TE_PROCESS_ENTER)
-        self.variable_number_of_trains.SetValue("6")
+        self.variable_number_of_trains.SetValue("8")
         self.variable_number_of_trains.SetPosition((1100, 450))
         self.label_number_of_trains = wx.StaticText(self.panel, label="Number of trains")
         self.label_number_of_trains.SetPosition((1100, 433))
         self.label_number_of_trains.SetForegroundColour(wx.Colour(255, 255, 255))
 
         self.variable_city_start = wx.TextCtrl(self.panel, style=wx.TE_PROCESS_ENTER)
-        self.variable_city_start.SetValue("4")
+        self.variable_city_start.SetValue("46")
         self.variable_city_start.SetPosition((1100, 500))
         self.label_city_start = wx.StaticText(self.panel, label="Start city ID")
         self.label_city_start.SetPosition((1100, 483))
@@ -667,7 +668,7 @@ class MyFrame(wx.Frame):
         self.destroy_window()
         
         try:
-            track = self.best_result.DT[int(self.variable_train_number.GetValue())]
+            track = self.best_result.DT[int(self.variable_train_number.GetValue()) - 1]
             self.print_graph_track(track)
             text = ""
             i = 0
@@ -700,9 +701,10 @@ class MyFrame(wx.Frame):
         self.figure, self.ax = plt.subplots()
         plt.imshow(self.image)
         pos = nx.get_node_attributes(self.G.G, 'coordinates')
-        edge_labels = {(u, v): d['weight'] for u, v, d in self.G.G.edges(data=True)}
-        nx.draw(self.G.G, ax=self.ax, pos = pos, with_labels=True, font_weight='bold')
-        nx.draw_networkx_edge_labels(self.G.G, pos = pos, edge_labels = edge_labels, font_color = 'red', font_size = 7)
+        #edge_labels = {(u, v): d['weight'] for u, v, d in self.G.G.edges(data=True)}
+        node_sizes = [self.G.G.nodes[node]['size'] for node in self.G.G.nodes]
+        nx.draw(self.G.G, ax=self.ax, pos = pos, with_labels=True, font_weight='bold', node_size = node_sizes)
+        #nx.draw_networkx_edge_labels(self.G.G, pos = pos, edge_labels = edge_labels, font_color = 'red', font_size = 7)
         self.ax.set_position([0, 0, 1, 1])
         self.canvas = FigureCanvas(self.panel, -1, self.figure)
         self.canvas.SetSize(218, 0, 827, 720)
@@ -712,10 +714,9 @@ class MyFrame(wx.Frame):
         self.figure, self.ax = plt.subplots()
         plt.imshow(self.image)
         pos = nx.get_node_attributes(self.G.G, 'coordinates')
-        edge_labels = {(u, v): d['weight'] for u, v, d in self.G.G.edges(data=True)}
-        nx.draw(self.G.G, pos = pos, with_labels = True)
+        node_sizes = [self.G.G.nodes[node]['size'] for node in self.G.G.nodes]
+        nx.draw(self.G.G, ax=self.ax, pos = pos, with_labels=True, font_weight='bold', node_size = node_sizes)
         nx.draw_networkx_edges(self.G.G, pos = pos, edgelist = way, width = 3, edge_color = 'red')
-        nx.draw_networkx_edge_labels(self.G.G, pos = pos, edge_labels = edge_labels, font_color = 'red', font_size = 7)
         self.ax.set_position([0, 0, 1, 1])
         self.canvas = FigureCanvas(self.panel, -1, self.figure)
         self.canvas.SetSize(218, 0, 827, 720)
@@ -739,6 +740,7 @@ class MyFrame(wx.Frame):
         self.ax.set_facecolor('black')
         self.ax.title.set_color('white')
         self.ax.tick_params(axis='both', colors='white')
+        self.ax.xaxis.set_major_locator(MaxNLocator(integer=True))
         self.canvas = FigureCanvas(self.panel, -1, self.figure)
         self.canvas.SetSize(218, 0, 827, 720)
 
@@ -764,6 +766,7 @@ class MyFrame(wx.Frame):
             self.ax.set_facecolor('black')
             self.ax.title.set_color('white')
             self.ax.tick_params(axis='both', colors='white')
+            self.ax.xaxis.set_major_locator(MaxNLocator(integer=True))
             self.canvas.draw()
 
 

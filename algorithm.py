@@ -119,9 +119,8 @@ class Algorithm:
 
         actually_population = self.fn.sort(actually_population)
         actually_population = actually_population[:previous_population]
-        population_to_mutate = copy.deepcopy(actually_population)
 
-        args = (population_to_mutate, mutate_power, start)
+        args = (actually_population, mutate_power, start)
         results_queue = queue.Queue()
 
         loop = (size_population - len(actually_population))//7
@@ -174,25 +173,26 @@ class Algorithm:
         
         new_result = copy.deepcopy(result)
 
-        for _ in range(mutate_power * 2):
+        for _ in range(mutate_power):
 
             train_max_track = new_result.HL.index(max(new_result.HL))
             train_min_track = new_result.HL.index(min(new_result.HL))
 
             point_id = random.randint(0, len(new_result.HP[train_max_track]) - 1)
-            new_result.HP[train_min_track].append(new_result.HP[train_max_track][point_id])
+            point = new_result.HP[train_max_track][point_id]
+            new_result.HP[train_min_track].append(point)
+            if point[0] not in new_result.DP[train_min_track].keys():
+                new_result.DP[train_min_track][point[0]] = {}
+            if point[1] not in new_result.DP[train_min_track][point[0]].keys():
+                new_result.DP[train_min_track][point[0]][point[1]] = 0
+            new_result.DP[train_min_track][point[0]][point[1]] += new_result.DP[train_max_track][point[0]][point[1]]
             del new_result.HP[train_max_track][point_id]
+            del new_result.DP[train_max_track][point[0]][point[1]]
 
-            new_result.DT[train_max_track] = self.fn.generate_track(new_result.HP[train_max_track], start, self.SG)
             new_result.DT[train_min_track] = self.fn.generate_track(new_result.HP[train_min_track], start, self.SG)
-            new_result.solve_HL(train_max_track)
             new_result.solve_HL(train_min_track)
-            new_result.solve_HF(train_max_track)
             new_result.solve_HF(train_min_track)
-        
-        for _ in range(mutate_power):
 
-            train_max_track = new_result.HL.index(max(new_result.HL))
             test_result = copy.deepcopy(new_result)
 
             random.shuffle(test_result.HP[train_max_track])
@@ -208,12 +208,14 @@ class Algorithm:
                 test_result.solve_HL(train_max_track)
                 itr += 1
 
-                if itr > 10:
+                if itr > 3:
                     break
 
-            if itr < 10:
+            if itr < 3:
                 new_result = copy.deepcopy(test_result)
                 new_result.solve_HF(train_max_track)
+
+            
 
         self.mutate_locomotives(new_result, mutate_power)
         self.fn.attaching_wagons(new_result)

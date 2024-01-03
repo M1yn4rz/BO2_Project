@@ -78,6 +78,7 @@ class Functions:
 
     def attaching_wagons(self, result):
 
+
         for i in range(self.n):
 
             max_packages = 0
@@ -92,13 +93,13 @@ class Functions:
 
                 if elem[0] in DP_copy.keys():
 
-                    for e in DP_copy[elem[0]]:
+                    for e in DP_copy[elem[0]].keys():
 
-                        if e[0] not in DP_actually:
-                            DP_actually[e[0]] = e[1]
+                        if e not in DP_actually:
+                            DP_actually[e] = DP_copy[elem[0]][e]
                         else:
-                            DP_actually[e[0]] += e[1]
-                        actually_packages += e[1]
+                            DP_actually[e] += DP_copy[elem[0]][e]
+                        actually_packages += DP_copy[elem[0]][e]
 
                     del DP_copy[elem[0]]
 
