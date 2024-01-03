@@ -121,9 +121,10 @@ class MyFrame(wx.Frame):
         self.label_number_of_trains.SetPosition((1100, 433))
         self.label_number_of_trains.SetForegroundColour(wx.Colour(255, 255, 255))
 
-        self.variable_city_start = wx.TextCtrl(self.panel, style=wx.TE_PROCESS_ENTER)
-        self.variable_city_start.SetValue("46")
+        city_choices = self.dt['City'].tolist()  # Dodaj własne opcje
+        self.variable_city_start = wx.ComboBox(self.panel, value=city_choices[0], choices=city_choices, style=wx.CB_READONLY)
         self.variable_city_start.SetPosition((1100, 500))
+        self.variable_city_start.SetSize((110, 23))
         self.label_city_start = wx.StaticText(self.panel, label="Start city ID")
         self.label_city_start.SetPosition((1100, 483))
         self.label_city_start.SetForegroundColour(wx.Colour(255, 255, 255))
@@ -172,9 +173,11 @@ class MyFrame(wx.Frame):
         self.print_chart()
         self.window = 'Chart'
         self.label_time_to_end.SetLabel("Generating first population")
+        self.label_time_to_end.SetForegroundColour(wx.Colour(255, 255, 255))
 
         pub.subscribe(self.update_chart, 'update_chart')
         pub.subscribe(self.time_to_end, 'update_time')
+        pub.subscribe(self.wrong_variables, 'update_variables')
         self.thread = threading.Thread(target = self.start_algorithm)
         self.stop_event.clear()
         self.thread.start()
@@ -191,7 +194,42 @@ class MyFrame(wx.Frame):
         previous_population = int(self.variable_previous_population.GetValue())
         mutate_power = int(self.variable_mutate_power.GetValue())
         number_of_trains = int(self.variable_number_of_trains.GetValue())
-        start_city = int(self.variable_city_start.GetValue())
+        start_city = self.dt[self.dt['City'] == self.variable_city_start.GetValue()].index[0] + 1
+
+        flag_size = False
+        flag_epochs = False
+        flag_previous = False
+        flag_mutate = False
+        flag_trains = False
+
+        error = False
+
+        if size_population < 100 or size_population > 1000:
+            error = True
+            flag_size = True
+
+        if epochs < 5 or epochs > 100:
+            error = True
+            flag_epochs = True
+
+        if previous_population < 1 or previous_population > 50:
+            error = True
+            flag_previous = True
+
+        if mutate_power < 1 or mutate_power > 50:
+            error = True
+            flag_mutate = True
+
+        if number_of_trains < 1 or number_of_trains > 20:
+            error = True
+            flag_trains = True
+
+        pub.sendMessage('update_variables', flag_size = flag_size, flag_epochs = flag_epochs,
+                            flag_previous = flag_previous, flag_mutate = flag_mutate, flag_trains = flag_trains)
+
+        if error:
+            pub.sendMessage('update_time', time_ = "ERROR")
+            return None
 
         new_ag = ag.Algorithm(n = number_of_trains)
         
@@ -231,16 +269,59 @@ class MyFrame(wx.Frame):
         pub.sendMessage('update_time', time_ = int(0))
 
     def time_to_end(self, time_):
-        self.time_to_the_end = "Time to end: "
-        if time_ >= 3600:
-            self.time_to_the_end += str(time_//3600) + " h "
-        if time_ >= 60:
-            self.time_to_the_end += str((time_ - (time_//3600)*3600)//60) + " min "
-        if time_ >= 1:
-            self.time_to_the_end += str(time_ - (time_//3600)*3600 - (time_ - (time_//3600)*3600)//60*60) + " s "
+        if type(time_) == str:
+            self.time_to_the_end = time_
+            self.label_time_to_end.SetForegroundColour(wx.Colour(255, 0, 0))
         else:
-            self.time_to_the_end = "Complete"
+            self.time_to_the_end = "Time to end: "
+            if time_ >= 3600:
+                self.time_to_the_end += str(time_//3600) + " h "
+            if time_ >= 60:
+                self.time_to_the_end += str((time_ - (time_//3600)*3600)//60) + " min "
+            if time_ >= 1:
+                self.time_to_the_end += str(time_ - (time_//3600)*3600 - (time_ - (time_//3600)*3600)//60*60) + " s "
+            else:
+                self.time_to_the_end = "Complete"
         self.label_time_to_end.SetLabel(self.time_to_the_end)
+        
+    def wrong_variables(self, flag_size = False, flag_epochs = False, flag_previous = False, flag_mutate = False, flag_trains = False):
+
+        if flag_size:
+            self.label_size_population.SetForegroundColour(wx.Colour(255, 0, 0))
+            self.label_size_population.SetLabel("Size population (100 - 1000)")
+        else:
+            self.label_size_population.SetForegroundColour(wx.Colour(255, 255, 255))
+            self.label_size_population.SetLabel("Size population")
+
+        if flag_epochs:
+            self.label_epochs.SetForegroundColour(wx.Colour(255, 0, 0))
+            self.label_epochs.SetLabel("Number of epochs (5 - 100)")
+        else:
+            self.label_epochs.SetForegroundColour(wx.Colour(255, 255, 255))
+            self.label_epochs.SetLabel("Number of epochs")
+
+        if flag_previous:
+            self.label_previous_population.SetForegroundColour(wx.Colour(255, 0, 0))
+            self.label_previous_population.SetLabel("Previous population in % (1 - 50)")
+        else:
+            self.label_previous_population.SetForegroundColour(wx.Colour(255, 255, 255))
+            self.label_previous_population.SetLabel("Previous population in %")
+
+        if flag_mutate:
+            self.label_mutate_power.SetForegroundColour(wx.Colour(255, 0, 0))
+            self.label_mutate_power.SetLabel("Mutate power in % (1 - 50)")
+        else:
+            self.label_mutate_power.SetForegroundColour(wx.Colour(255, 255, 255))
+            self.label_mutate_power.SetLabel("Mutate power in %")
+
+        if flag_trains:
+            self.label_number_of_trains.SetForegroundColour(wx.Colour(255, 0, 0))
+            self.label_number_of_trains.SetLabel("Number of trains (1 - 20)")
+        else:
+            self.label_number_of_trains.SetForegroundColour(wx.Colour(255, 255, 255))
+            self.label_number_of_trains.SetLabel("Number of trains")
+
+        self.Refresh()
 
     def start_button(self):
 
