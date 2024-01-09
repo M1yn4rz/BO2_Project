@@ -1,31 +1,41 @@
 From ID,From city,To ID,To city,How many
-7.0,Chojnice,27.0,Olsztyn,108.0
-13.0,Gdynia,5.0,Bydgoszcz,142.0
-40.0,Suwałki,16.0,Grudziądz,44.0
-36.0,Sanok,34.0,Rybnik,141.0
-20.0,Konin,17.0,Kalisz,58.0
-25.0,Leszno,37.0,Siedlce,70.0
-28.0,Opole,15.0,Gorzów Wielkopolski,113.0
-24.0,Legnica,43.0,Słupsk,99.0
-16.0,Grudziądz,18.0,Katowice,80.0
-32.0,Płock,41.0,Szczecin,107.0
-16.0,Grudziądz,24.0,Legnica,72.0
-30.0,Poznań,3.0,Białystok,41.0
-54.0,Żyrardów,52.0,Łomża,132.0
-8.0,Ciechanów,37.0,Siedlce,147.0
-32.0,Płock,33.0,Radom,32.0
-41.0,Szczecin,43.0,Słupsk,126.0
-19.0,Kielce,7.0,Chojnice,91.0
-45.0,Toruń,28.0,Opole,45.0
-31.0,Przemyśl,34.0,Rybnik,86.0
-10.0,Elbląg,26.0,Lublin,39.0
-27.0,Olsztyn,34.0,Rybnik,33.0
-9.0,Częstochowa,50.0,Zamość,49.0
-24.0,Legnica,18.0,Katowice,106.0
-54.0,Żyrardów,13.0,Gdynia,96.0
-7.0,Chojnice,51.0,Zielona Góra,31.0
-13.0,Gdynia,25.0,Leszno,92.0
-44.0,Tarnów,19.0,Kielce,109.0
-13.0,Gdynia,45.0,Toruń,54.0
-31.0,Przemyśl,40.0,Suwałki,62.0
-34.0,Rybnik,49.0,Włocławek,134.0
+50.0,Zamość,35.0,Rzeszów,770.0
+51.0,Zielona Góra,32.0,Płock,311.0
+25.0,Leszno,4.0,Bielsko-Biała,533.0
+36.0,Sanok,48.0,Wrocław,314.0
+37.0,Siedlce,25.0,Leszno,731.0
+38.0,Stalowa Wola,36.0,Sanok,374.0
+3.0,Białystok,8.0,Ciechanów,773.0
+26.0,Lublin,37.0,Siedlce,649.0
+47.0,Wałbrzych,43.0,Słupsk,337.0
+11.0,Ełk,52.0,Łomża,455.0
+29.0,Piła,50.0,Zamość,663.0
+26.0,Lublin,47.0,Wałbrzych,434.0
+20.0,Konin,3.0,Białystok,763.0
+40.0,Suwałki,51.0,Zielona Góra,741.0
+44.0,Tarnów,49.0,Włocławek,609.0
+41.0,Szczecin,25.0,Leszno,234.0
+16.0,Grudziądz,2.0,Biała Podlaska,250.0
+51.0,Zielona Góra,53.0,Łódź,361.0
+50.0,Zamość,4.0,Bielsko-Biała,690.0
+17.0,Kalisz,36.0,Sanok,614.0
+18.0,Katowice,10.0,Elbląg,671.0
+11.0,Ełk,22.0,Kołobrzeg,749.0
+34.0,Rybnik,18.0,Katowice,235.0
+53.0,Łódź,25.0,Leszno,601.0
+42.0,Szczecinek,6.0,Chełm,292.0
+48.0,Wrocław,12.0,Gdańsk,309.0
+37.0,Siedlce,24.0,Legnica,794.0
+8.0,Ciechanów,47.0,Wałbrzych,386.0
+8.0,Ciechanów,31.0,Przemyśl,631.0
+22.0,Kołobrzeg,6.0,Chełm,357.0
+34.0,Rybnik,41.0,Szczecin,625.0
+53.0,Łódź,49.0,Włocławek,616.0
+40.0,Suwałki,34.0,Rybnik,236.0
+8.0,Ciechanów,16.0,Grudziądz,642.0
+46.0,Warszawa,6.0,Chełm,493.0
+40.0,Suwałki,42.0,Szczecinek,343.0
+43.0,Słupsk,30.0,Poznań,517.0
+16.0,Grudziądz,21.0,Koszalin,201.0
+21.0,Koszalin,52.0,Łomża,207.0
+24.0,Legnica,6.0,Chełm,235.0
