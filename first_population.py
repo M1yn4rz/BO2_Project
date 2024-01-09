@@ -31,25 +31,27 @@ class First_population:
 
         for per in range(size_population):
 
-            if int(per/size_population*100) >= percent:
-                os.system('cls' if os.name == 'nt' else 'clear')
-                percent = int((per+1)/size_population*100)
-                print('\nGenerate first population process:', percent, '%')
+            # if int(per/size_population*100) >= percent:
+            #     os.system('cls' if os.name == 'nt' else 'clear')
+            #     percent = int((per+1)/size_population*100)
+            #     print('\nGenerate first population process:', percent, '%')
                 
             one_result = md.Model(self.SC, self.SL, self.SW, self.n, self.SG)
 
             HP = [[] for _ in range(self.n)]
-            points = []
+            points = {}
             
             for key in self.SP:
                 for elem in self.SP[key]:
-                    points.append([key, elem[0], elem[1]])
+                    if (key, elem[0]) not in points.keys():
+                        points[key, elem[0]] = 0
+                    points[key, elem[0]] += elem[1]
 
             idx = 0
 
-            for elem in points:
-
-                HP[idx].append(elem[:-1])
+            for elem in points.keys():
+                
+                HP[idx].append(elem)
 
                 if elem[0] not in one_result.DP[idx].keys():
                     one_result.DP[idx][elem[0]] = {}
@@ -57,7 +59,7 @@ class First_population:
                 if elem[1] not in one_result.DP[idx][elem[0]].keys():
                     one_result.DP[idx][elem[0]][elem[1]] = 0
 
-                one_result.DP[idx][elem[0]][elem[1]] += elem[2]
+                one_result.DP[idx][elem[0]][elem[1]] += points[elem[0], elem[1]]
 
                 idx += 1
 

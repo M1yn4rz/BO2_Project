@@ -121,8 +121,8 @@ class MyFrame(wx.Frame):
         self.label_number_of_trains.SetPosition((1100, 433))
         self.label_number_of_trains.SetForegroundColour(wx.Colour(255, 255, 255))
 
-        city_choices = self.dt['City'].tolist()  # Dodaj własne opcje
-        self.variable_city_start = wx.ComboBox(self.panel, value=city_choices[0], choices=city_choices, style=wx.CB_READONLY)
+        city_choices = self.dt['City'].tolist()
+        self.variable_city_start = wx.ComboBox(self.panel, value=city_choices[45], choices=city_choices, style=wx.CB_READONLY)
         self.variable_city_start.SetPosition((1100, 500))
         self.variable_city_start.SetSize((110, 23))
         self.label_city_start = wx.StaticText(self.panel, label="Start city ID")
